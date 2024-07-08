@@ -18,11 +18,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning >
       <body className={inter.className}>
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen dark:bg-dark-background bg-light-background">
               <Header />
               <main className="flex-grow">{children}</main>
               {/*<Footer />*/}
