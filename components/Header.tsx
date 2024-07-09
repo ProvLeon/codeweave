@@ -11,21 +11,22 @@ export default function Header() {
 
   return (
     <header className="bg-background border-b border-light-border dark:border-dark-border">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="container mx-auto px-2 py-2 flex justify-between items-center">
         <Link href="/">
           <Image
             src="/assets/CodeWeave_logo_light_bg.png"
-            width={100}
-            height={200}
+            width={65}
+            height={50}
             alt="CodeWeave Logo"
-            className="h-8 dark:hidden"
+            className=" dark:hidden w-auto h-auto"
+            priority={true}
           />
           <Image
             src="/assets/CodeWeave_logo_Bright_dark_bg.png"
             width={100}
-            height={200}
+            height={100}
             alt="CodeWeave Logo"
-            className="h-8 hidden dark:block"
+            className=" hidden dark:block h-auto w-auto"
           />
         </Link>
         <nav className="flex items-center space-x-4">
@@ -38,10 +39,10 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link href="/login">
-                <Button variant={`${session ? 'default' : 'outline'}`}>Login</Button>
+              <Link href="/sign-in">
+                <Button variant={`${session ? 'default' : 'outline'}`}>Sign In</Button>
               </Link>
-              <Link href="/register">
+              <Link href="/sign-up">
                 <Button>Sign Up</Button>
               </Link>
             </>

@@ -9,10 +9,10 @@ export default function Home() {
         Real-time collaborative code editing and execution across multiple programming languages.
       </p>
       <div className="space-x-4">
-        <Link href="/register">
+        <Link href="/sign-up">
           <Button size="lg">Get Started</Button>
         </Link>
-        <Link href="/login">
+        <Link href="/sign-in">
           <Button size="lg" variant="outline">Login</Button>
         </Link>
       </div>

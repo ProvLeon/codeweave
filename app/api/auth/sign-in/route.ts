@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Invalid email or password"})
+    return NextResponse.json({ error: "Invalid email or password",})
   }
 
   const isPasswordValid = await compare(password, user.password)
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email or password" })
   }
 
-  const token = signToken({ userId: user.id })
+  const token = signToken(user.id)
 
-  return NextResponse.json({ token })
+  return NextResponse.json({ token, user })
 }

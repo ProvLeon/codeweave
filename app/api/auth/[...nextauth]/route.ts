@@ -1,58 +1,58 @@
-import NextAuth, {Session, User} from "next-auth"
-import { JWT } from "next-auth/jwt"
-import CredentialsProvider from "next-auth/providers/credentials"
-import prisma from "@/lib/prisma"
-import { compare } from "bcryptjs"
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import prisma from "@/lib/prisma";
+import { compare } from "bcryptjs";
+import { authConfig } from "./auth.config";
+//import { JWT } from "next-auth/jwt";
+
+const getUser = async (userDetails: {email: string, password: string}): Promise<any> => {
+  if (!userDetails?.email || !userDetails?.password) {
+    return null;
+  }
+
+  const user = typeof userDetails.email === 'string' && await prisma.user.findUnique({
+    where: { email: userDetails.email }
+  });
+
+
+  if (!user) {
+    return null;
+  }
+
+  const isPasswordValid = typeof userDetails.password === 'string' && await compare(userDetails.password, user.password);
+
+  if (!isPasswordValid) {
+    return null;
+  }
+  return { id: user.id, email: user.email, name: `${user.firstName} ${user.lastName}` };
+}
 
 export const authOptions = {
+  ...authConfig,
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
+    Credentials({
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
+        console.log({"credentials": credentials})
+        if (!credentials) {
+          return null;
         }
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        })
-
-        if (!user) {
-          return null
-        }
-        const isPasswordValid = await compare(String(credentials.password), user.password)
-
-        if (!isPasswordValid) {
-          return null
-        }
-        return { id: user.id, email: user.email, name: `${user.firstName} ${user.lastName}` }
+        const user = await getUser({
+          email: credentials.email as string,
+          password: credentials.password as string
+        });
+        return user ?? null;
+        //
       }
     })
   ],
-  callbacks: {
-    async session({ session, token }: {session: Session, token: JWT}) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.name = token.name as string
-        session.user.email = token.email as string
-      }
-      return session
-    },
-    async jwt({ token, user }: {token: JWT, user: User}) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    }
-  },
-  pages: {
-    signIn: '/login'
-  }
-}
 
-const handler = NextAuth(authOptions)
+};
 
-export { handler as GET, handler as POST }
+export const {auth, signIn, signOut, handlers: { GET, POST}} = NextAuth(authOptions);
+
+//export { handler as GET, handler as POST };

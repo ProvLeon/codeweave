@@ -1,0 +1,47 @@
+import type { NextAuthConfig } from "next-auth";
+import { Session, User } from "next-auth";
+import { JWT } from "next-auth/jwt";
+
+export const authConfig = {
+  callbacks: {
+    async session({ session, token }: {session: Session, token: JWT}) {
+      try {
+
+        console.log('Session callback called with token:', token);
+        if (token.name && token.email && typeof token.id === 'string') {
+          session.user.id = token.id || '';
+          session.user.name = token.name;
+          session.user.email = token.email;
+        }
+        return session;
+      } catch (error) {
+        console.error('Error in session callback:', error);
+        return session;
+      }
+    },
+    async jwt({ token, user }: {token: JWT, user: User}) {
+      try {
+        console.log('JWT callback called with user:', user);
+
+        if (user) {
+          token.id = user.id;
+        }
+
+        return token;
+      } catch (error) {
+        console.error('Error in JWT callback:', error);
+        return token;
+    }}
+  },
+  pages: {
+    signIn: "/signin",
+    signOut: "/signout",
+    error: "/api/auth/error",
+  },
+  session: {
+    strategy: "jwt",
+  },
+  debug: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  providers: [],
+} satisfies NextAuthConfig
