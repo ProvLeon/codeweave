@@ -29,7 +29,7 @@ export default async function DashboardContent() {
       {/*<DocumentList userId={session?.user?.id as string} />*/}
       {/*</FolderTree>*/}
       <FolderTree userId={session.user.id}/>
-      {/*<CodeEditor documentId={session.user.id} initialValue="Hello"/>*/}
+      <CodeEditor documentId={session.user.id} initialValue="Hello"/>
     </div>
   )
 }

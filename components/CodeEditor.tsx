@@ -1,13 +1,13 @@
 // components/CodeEditor.tsx
 'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
-import { javascript } from "@codemirror/lang-javascript";
-import { defaultKeymap } from "@codemirror/commands";
-import { oneDark } from "@codemirror/theme-one-dark";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useRef, useState } from 'react';
+import { EditorState } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
+import { javascript } from '@codemirror/lang-javascript';
+import { defaultKeymap } from '@codemirror/commands';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { io, Socket } from 'socket.io-client';
 
 interface EditorProps {
   initialValue: string;
@@ -20,7 +20,7 @@ const CodeEditor = ({ initialValue, documentId }: EditorProps) => {
   const [editorView, setEditorView] = useState<EditorView | null>(null);
 
   useEffect(() => {
-    const newSocket = io("/api/collaborate", {
+    const newSocket = io('/api/collaborate', {
       path: '/api/collaborate',
     });
 
@@ -40,7 +40,7 @@ const CodeEditor = ({ initialValue, documentId }: EditorProps) => {
 
     return () => {
       newSocket.disconnect();
-    }
+    };
   }, [documentId, editorView]);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const CodeEditor = ({ initialValue, documentId }: EditorProps) => {
           EditorView.updateListener.of((update) => {
             if (update.changes) {
               if (socket) {
-                socket.emit("document-change", {
+                socket.emit('document-change', {
                   documentId,
                   content: update.state.doc.toString(),
                 });
@@ -79,7 +79,7 @@ const CodeEditor = ({ initialValue, documentId }: EditorProps) => {
     };
   }, [initialValue, socket]);
 
-  return <div ref={editorRef} style={{ border: "1px solid black", height: "500px" }} />;
-}
+  return <div ref={editorRef} style={{ border: '1px solid black', height: '500px' }} />;
+};
 
 export default CodeEditor;
