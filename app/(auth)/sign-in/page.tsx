@@ -2,22 +2,24 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);  // Set loading state to true when the form is submitted
+
     const result = await signIn('credentials', {
       email,
       password,
@@ -27,11 +29,13 @@ export default function LoginPage() {
     if (result?.error) {
       localStorage.setItem('error', result.error.split(']')[1]);
       console.error('Sign-in error:', result);
-      setError(result.error.split(']')[1] as string);
+      setError(result.error);
     } else {
       console.log('Sign-in successful:', result);
       router.push('/dashboard');
     }
+
+    setLoading(false);  // Set loading state to false after processing the result
   };
 
   return (
@@ -73,8 +77,8 @@ export default function LoginPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button type="submit" variant="default" className="w-full">
-              Sign In
+            <Button type="submit" variant="default" className="w-full" loading={loading}>
+              {loading ? 'Signing In...' : 'Sign In'}
             </Button>
           </CardFooter>
         </form>

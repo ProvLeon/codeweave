@@ -4,13 +4,16 @@ import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/Header'
 // import Footer from '@/components/Footer'
 import { SessionProvider } from 'next-auth/react'
+import Head from 'next/head'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'CodeWeave',
   description: 'Real-time collaborative code editing platform',
-  image: '/public/assets/CodeWeave_logo_Bright_dark_bg.png'
+  icons: {
+    icon: '/favicon.svg', // Specify the path to your favicon
+  },
 }
 
 export default function RootLayout({
