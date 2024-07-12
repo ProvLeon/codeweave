@@ -23,6 +23,7 @@ import { Card, CardContent, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import Terminal from './Terminal';
 import { EyeIcon, EyeOffIcon, Tv2Icon, ZapIcon } from 'lucide-react';
+import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
 
 interface EditorProps {
   initialValue: string;
@@ -87,6 +88,9 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           languageExtensions[language](),
           keymap.of(defaultKeymap),
           oneDark,
+          closeBrackets(),
+          syntaxHighlighting(defaultHighlightStyle),
+          keymap.of([...defaultKeymap, indentWithTab, ...closeBracketsKeymap]),
           EditorView.updateListener.of((update) => {
             if (collaborative && update.changes && socket) {
               socket.emit('document-change', {
@@ -98,11 +102,28 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         ],
       });
 
+      let baseTheme = EditorView.theme({
+        ".cm-o-replacement": {
+          display: "inline-block",
+          width: ".5em",
+          height: ".5em",
+          borderRadius: ".25em"
+        },
+        "&light .cm-o-replacement": {
+          backgroundColor: "#04c"
+        },
+        "&dark .cm-o-replacement": {
+          backgroundColor: "#5bf"
+        }
+      })
       const view = new EditorView({
         state: startState,
         parent: editorRef.current,
       });
 
+
+
+      view.dom.style.height = `${showTerminal ? 'calc(15.5 * 1.5em': 'calc(24 * 1.5em)'}`;
       setEditorView(view);
 
       return () => {
@@ -114,7 +135,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
   return (
     <div className={`w-full h-full ${className}`}>
       <CardTitle className="text-light-heading dark:text-dark-heading px-3 py-2 pr-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">{document?.title}</h1>
+        <p className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">{document?.title}</p>
         <div className="flex items-center gap-5 flex-row">
           <select
             className="mt-2 p-2 text-dark-heading rounded-lg text-xs outline-none bg-active"
@@ -158,8 +179,8 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           </Button>
             </div>
       </CardTitle>
-      <CardContent className={`h-[calc(100vh-${showTerminal ? '200px' : '100px'})] overflow-hidden`}>
-        <div ref={editorRef} className={`border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto ${showTerminal ? 'h-[70%]' : 'h-[75vh]'} bg-neutral-800 bg-opacity-70`} />
+      <CardContent className={`h-[calc(200vh-${showTerminal ? '200px' : '100px'})] overflow-hidden`}>
+        <div ref={editorRef} className={`border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto ${showTerminal ? 'h-[90%]' : 'h-[75vh]'} bg-neutral-800 bg-opacity-70`} />
         {showTerminal && <Terminal />}
       </CardContent>
     </div>

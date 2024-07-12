@@ -26,14 +26,19 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    if (result?.error) {
+    if (result?.url && result.error ) {
+      console.error('Sign-in error:', result);
+      setError(`${result.error}: Incorrect Email or Password.`)
+    } else if (result?.error && !result.url) {
       localStorage.setItem('error', result.error.split(']')[1]);
       console.error('Sign-in error:', result);
-      setError(result.error);
+      setError(`${result.error}: Connection Error`);
     } else {
       console.log('Sign-in successful:', result);
       router.push('/dashboard');
     }
+    setEmail('');
+    setPassword('');
 
     setLoading(false);  // Set loading state to false after processing the result
   };
