@@ -15,84 +15,83 @@ export default function DashboardClient({ session }: { session: any }) {
     "javascript": {
       id: "1",
       title: "Addition",
-      content: `
-    function add(a, b) {
-    return a + b;
-    }
-    `
+      content:
+`function add(a, b) {
+  return a + b;
+}`
   },
   "python": {
     id: "2",
     title: "Addition",
-    content: `
-    def add(a, b):
-    return a + b
-    `
+    content:
+`def add(a, b):
+  return a + b
+`
   },
   "java": {
     id: "3",
     title: "Addition",
-    content: `
-    public class Add {
-      public static int add(int a, int b) {
-        return a + b;
-      }
-    }
-    `
+    content:
+`public class Add {
+  public static int add(int a, int b) {
+    return a + b;
+  }
+}
+`
   },
   "html": {
     id: "4",
     title: "Addition",
-    content: `
-    <html>
-      <body>
-        <h1>My First Heading</h1>
-        <p>My first paragraph.</p>
-      </body>
-    </html>
-    `
+    content:
+`<html>
+  <body>
+    <h1>My First Heading</h1>
+    <p>My first paragraph.</p>
+  </body>
+</html>
+`
   },
   "cpp": {
     id: "5",
     title: "Addition",
-    content: `
-    #include <iostream>
-    using namespace std;
+    content:
+`#include <iostream>
+using namespace std;
 
-    int add(int a, int b) {
-      return a + b;
-    }`
+int add(int a, int b) {
+  return a + b;
+}`
   },
   "rust": {
     id: "6",
     title: "Addition",
-    content: `
-    fn add(a: int, b: int) -> int {
-      return a + b
-    }`
+    content:
+`fn add(a: int, b: int) -> int {
+  return a + b
+}`
   },
   "json": {
     id: "7",
     title: "Addition",
-    content: `
-    {
-      "key": "value"
-    }`
+    content:
+`{
+  "key": "value"
+}`
   },
   "markdown": {
     id: "8",
     title: "Addition",
-    content: `
-    # My First Heading
-    ## My First Subheading
-    `
+    content:
+`# My First Heading
+## My First Subheading
+`
   },
   "sql": {
     id: "9",
     title: "Addition",
-    content: `
-      SELECT * FROM table
-    `
+    content:
+`SELECT * FROM table
+`
   },
 
 };
@@ -117,6 +116,7 @@ export default function DashboardClient({ session }: { session: any }) {
                 setShowTerminal={setShowTerminal}
                 language={language}
                 setLanguage={setLanguage}
+                collaborative={true}
               />
             ) : (
               //{

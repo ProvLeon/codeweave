@@ -24,6 +24,7 @@ import { Button } from './ui/button';
 import Terminal from './Terminal';
 import { EyeIcon, EyeOffIcon, Tv2Icon, ZapIcon } from 'lucide-react';
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import executeCode from '@/lib/Execute';
 
 interface EditorProps {
   initialValue: string;
@@ -52,6 +53,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [editorView, setEditorView] = useState<EditorView | null>(null);
+  const [executionResult, setExecutionResult] = useState<string>('');
 
   useEffect(() => {
     if (collaborative) {
@@ -102,28 +104,12 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         ],
       });
 
-      let baseTheme = EditorView.theme({
-        ".cm-o-replacement": {
-          display: "inline-block",
-          width: ".5em",
-          height: ".5em",
-          borderRadius: ".25em"
-        },
-        "&light .cm-o-replacement": {
-          backgroundColor: "#04c"
-        },
-        "&dark .cm-o-replacement": {
-          backgroundColor: "#5bf"
-        }
-      })
+
       const view = new EditorView({
         state: startState,
         parent: editorRef.current,
       });
 
-
-
-      view.dom.style.height = `${showTerminal ? 'calc(15.5 * 1.5em': 'calc(24 * 1.5em)'}`;
       setEditorView(view);
 
       return () => {
@@ -131,6 +117,25 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
       };
     }
   }, [document, collaborative, socket, language]);
+
+  const runCode = async () => {
+    if (editorView) {
+      const result = await fetch('/api/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: editorView.state.doc.toString(),
+          language,
+        }),
+      })
+      if (result.ok) {
+        const resultJson = await result.json();
+      setExecutionResult(resultJson.output);
+      }
+    }
+  };
 
   return (
     <div className={`w-full h-full ${className}`}>
@@ -140,7 +145,20 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           <select
             className="mt-2 p-2 text-dark-heading rounded-lg text-xs outline-none bg-active"
             value={language}
-            onChange={(e) => setLanguage(e.target.value as 'javascript' | 'python' | 'java' | 'html' | 'json' | 'sql' | 'markdown' | 'cpp' | 'rust')}
+            onChange={(e) =>
+              setLanguage(
+                e.target.value as
+                  | 'javascript'
+                  | 'python'
+                  | 'java'
+                  | 'html'
+                  | 'json'
+                  | 'sql'
+                  | 'markdown'
+                  | 'cpp'
+                  | 'rust'
+              )
+            }
           >
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
@@ -154,34 +172,52 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           </select>
           <Button
             className="mt-2 p-2 text-white rounded-lg"
-            onClick={setShowTerminal ? () => setShowTerminal(prev => !prev) : () => {}}
-            variant="default"
-            >
-            {showTerminal ?
-            <div className='relative'>
-              <EyeIcon />
-              <div className='absolute -right-1 top-3'>
-                <Tv2Icon style={{width: "10px", color: 'aliceblue', fontStyle: 'normal'}}/>
-              </div>
-            </div>
-            :
-            <div className='relative'>
-              <EyeOffIcon />
-              <div className='absolute -right-1 top-3'>
-              <Tv2Icon style={{width: "10px", color: 'tomato', fontStyle: 'normal'}}/>
-              </div>
-            </div>
+            onClick={
+              setShowTerminal ? () => setShowTerminal((prev) => !prev) : () => {}
             }
-
+            variant="default"
+          >
+            {showTerminal ? (
+              <div className="relative">
+                <EyeIcon />
+                <div className="absolute -right-1 top-3">
+                  <Tv2Icon
+                    style={{
+                      width: '10px',
+                      color: 'aliceblue',
+                      fontStyle: 'normal',
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <EyeOffIcon />
+                <div className="absolute -right-1 top-3">
+                  <Tv2Icon
+                    style={{ width: '10px', color: 'tomato', fontStyle: 'normal' }}
+                  />
+                </div>
+              </div>
+            )}
           </Button>
-          <Button className="mt-2 p-2 text-white rounded-lg">
+          <Button className="mt-2 p-2 text-white rounded-lg" onClick={runCode}>
             <ZapIcon size={20} />
           </Button>
-            </div>
+        </div>
       </CardTitle>
-      <CardContent className={`h-[calc(200vh-${showTerminal ? '200px' : '100px'})] overflow-hidden`}>
-        <div ref={editorRef} className={`border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto ${showTerminal ? 'h-[90%]' : 'h-[75vh]'} bg-neutral-800 bg-opacity-70`} />
-        {showTerminal && <Terminal />}
+      <CardContent
+        className={`h-[calc(100vh-${
+          showTerminal ? '200px' : '100px'
+        })] overflow-hidden`}
+      >
+        <div
+          ref={editorRef}
+          className={` border border-gray-300 dark:border-gray-700  rounded-t-lg overflow-y-auto ${
+            showTerminal ? 'h-[47vh]' : 'h-[75vh] rounded-b-lg'
+          } dark:bg-neutral-900 dark:bg-opacity-65 bg-gray-950 bg-opacity-85`}
+        />
+        {showTerminal && <Terminal executionResult={executionResult} />}
       </CardContent>
     </div>
   );

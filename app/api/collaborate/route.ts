@@ -1,89 +1,45 @@
-// app/api/collaborate/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { Server as SocketIOServer } from 'socket.io';
-import { Server as HttpServer } from 'http';
-import prisma from '@/lib/prisma';
-import { auth } from '@/app/api/auth/[...nextauth]/route';
+import { Server } from "socket.io"
+import { NextRequest, NextResponse } from "next/server"
+import { Server as HttpServer } from "http"
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+const ioHandler = (req: NextRequest, res: NextResponse) => {
+  const server = (res as any).socket?.server;
+  if (server && !server.io) {
+    console.log("Setting up Socket.io server...");
+    const io = new Server(server as HttpServer, {
+      path: "/api/collaborate",
+      addTrailingSlash: false,
+    });
 
-// Extend the server type to include the io property
-type CustomServer = HttpServer & {
-  io?: SocketIOServer;
-};
+    io.on("connection", (socket) => {
+      console.log("A user connected");
 
-let io: SocketIOServer | null = null;
+      socket.on("join-document", (documentId) => {
+        socket.join(documentId);
+        console.log(`User joined document: ${documentId}`);
+      });
 
-async function verifyUser() {
-  const session = await auth();
+      socket.on("leave-document", (documentId) => {
+        socket.leave(documentId);
+        console.log(`User left document: ${documentId}`);
+      });
 
-  if (!session) {
-    throw new Error('Unauthorized');
+      socket.on("document-change", (documentId, change) => {
+        socket.to(documentId).emit("document-change", change);
+        console.log(`Document change in ${documentId}: ${change}`);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("A user disconnected");
+      });
+    });
+
+    server.io = io;
+  } else {
+    console.log("Socket.io server already set up");
   }
-
-  const userId = session.user.id;
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      profile: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
-
-  return user;
+  return NextResponse.json({ message: 'Success' });
 }
 
-export async function GET(req: NextRequest) {
-  if (!io) {
-    // Cast the server to CustomServer type
-    const server = (req as any).socket.server as CustomServer;
-    if (!server.io) {
-      io = new SocketIOServer(server, {
-        path: '/api/collaborate',
-      });
-      server.io = io;
-
-      io.on('connection', async (socket) => {
-        try {
-          const user = await verifyUser();
-          console.log(`User ${user.profile?.username} connected`);
-
-          socket.on('join-document', (documentId) => {
-            socket.join(documentId);
-            console.log(`User ${user.profile?.username} joined document ${documentId}`);
-          });
-
-          socket.on('document-change', ({ documentId, content }) => {
-            socket.to(documentId).emit('document-change', { documentId, content });
-            console.log(`User ${user.profile?.username} changed document ${documentId}`);
-          });
-
-          socket.on('cursor-move', ({ documentId, position }) => {
-            socket.to(documentId).emit('cursor-move', { position });
-          });
-
-          socket.on('disconnect', () => {
-            console.log(`User ${user.profile?.username} disconnected`);
-          });
-        } catch (error) {
-          console.error('User verification failed:', error as any);
-          socket.disconnect(true);
-        }
-      });
-    } else {
-      io = server.io;
-    }
-  }
-
-  return NextResponse.json({ message: 'Socket.io server is running' });
-}
+export const GET = ioHandler;
+export const POST = ioHandler;

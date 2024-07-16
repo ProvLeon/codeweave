@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Folder, FolderOpen, File, Edit3, EditIcon, ChevronRight, ChevronDown, CircleSlashedIcon } from 'lucide-react';
+import { Folder, FolderOpen, File, Edit3, EditIcon, ChevronRight, ChevronDown, CircleSlashedIcon, TrashIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import LoadingSpinner from './LoadingSpinner';
@@ -76,6 +76,16 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
     onDocumentSelect(document);
   }
 
+  const deleteDocument = (document: Document) => {
+    if (window.confirm(`Are you sure you want to delete ${document.title}?`)) {
+      fetch(`/api/documents/${document.id}`, {
+        method: 'DELETE',
+      }).then(() => {
+        router.refresh()
+      })
+    }
+  }
+
   const renderFolder = (folder: Folder) => {
     return (
       <li key={folder.id} className="ml-4">
@@ -112,7 +122,7 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
                   >
                     <div>
 
-                    <div className='flex items-center'>
+                    <div className='flex items-center gap-2'>
                       <File size={16} />
                       <span className="ml-2">{document.title}</span>
                       {isHover[document.id] && (
@@ -120,6 +130,9 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
                           {editIcons[document.id] ? <Edit3 size={16} /> : <EditIcon size={16} />}
                         </div>
                       )}
+                    <div onClick={() => deleteDocument(document)} className="ml-2 cursor-pointer">
+                      <TrashIcon size={16} className="text-red-400" />
+                    </div>
                     </div>
                     <div>
                       <p className="pl-8 text-[9px] text-gray-400 dark:text-dark-text no-underline">
