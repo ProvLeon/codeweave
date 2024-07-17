@@ -4,10 +4,13 @@ import { useSession, signOut } from 'next-auth/react'
 import { Button } from './ui/button'
 import ThemeToggle  from './ThemeToggle'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { Code2Icon } from 'lucide-react'
 
 export default function Header() {
   const { data: session } = useSession()
   //const theme = getTheme()
+  const pathname = usePathname()
 
   return (
     <header className="bg-background border-b border-light-border dark:border-dark-border">
@@ -32,9 +35,15 @@ export default function Header() {
         <nav className="flex items-center space-x-4">
           {session ? (
             <>
-              <Link href="/dashboard">
+              {pathname === "/dashboard" ? <Link href="/dashboard/playground" >
+                <Button variant="ghost">
+                <span className='text-sm'>Playground</span>
+                  <Code2Icon/>
+                </Button>
+              </Link>:
+              <Link  href="/dashboard">
                 <Button variant="ghost">Dashboard</Button>
-              </Link>
+              </Link>}
               <Button onClick={() => signOut()}>Sign Out</Button>
             </>
           ) : (

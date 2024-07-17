@@ -88,3 +88,5 @@ const DELETE = async (request: Request, { params }: { params: { id: string } }) 
     return NextResponse.json({ error: "Error deleting folder" }, { status: 500 })
   }
 }
+
+export { GET, PUT, DELETE }

@@ -14,6 +14,7 @@ import { json } from '@codemirror/lang-json';
 import { sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { indentWithTab } from '@codemirror/commands';
+import { languages } from '@codemirror/language-data';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { cpp } from '@codemirror/lang-cpp';
 import { rust } from '@codemirror/lang-rust';
@@ -22,9 +23,9 @@ import { io, Socket } from 'socket.io-client';
 import { Card, CardContent, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import Terminal from './Terminal';
-import { EyeIcon, EyeOffIcon, Tv2Icon, ZapIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Tv2Icon, ZapIcon, CloudIcon, CloudOff } from 'lucide-react';
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
-import executeCode from '@/lib/Execute';
+//import executeCode from '@/lib/Execute';
 
 interface EditorProps {
   initialValue: string;
@@ -33,19 +34,20 @@ interface EditorProps {
   className?: string;
   showTerminal?: boolean;
   setShowTerminal?: Dispatch<SetStateAction<boolean>>;
-  language: 'javascript' | 'python' | 'java' | 'html' | 'json' | 'sql' | 'markdown' | 'cpp' | 'rust';
-  setLanguage: Dispatch<SetStateAction<'javascript' | 'python' | 'java' | 'html' | 'json' | 'sql' | 'markdown' | 'cpp' | 'rust'>>;
+  language: 'javascript' | 'python' | 'java'  | 'c++' | 'c' | 'rust';
+  setLanguage: Dispatch<SetStateAction<'javascript' | 'python' | 'java' | 'c++' | 'c' | 'rust'>>;
 }
 
 const languageExtensions = {
   javascript,
   python,
   java,
-  html,
-  json,
-  sql,
-  markdown,
-  cpp,
+  //html,
+  //json,
+  //sql,
+  //markdown,
+  c: cpp,
+  "c++": cpp,
   rust,
 };
 
@@ -54,6 +56,10 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [editorView, setEditorView] = useState<EditorView | null>(null);
   const [executionResult, setExecutionResult] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [documentContent, setDocumentContent] = useState(document.content);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (collaborative) {
@@ -94,11 +100,17 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           syntaxHighlighting(defaultHighlightStyle),
           keymap.of([...defaultKeymap, indentWithTab, ...closeBracketsKeymap]),
           EditorView.updateListener.of((update) => {
-            if (collaborative && update.changes && socket) {
-              socket.emit('document-change', {
-                id: document.id,
-                content: update.state.doc.toString(),
-              });
+            if (update.docChanged) {
+              const newContent = update.state.doc.toString();
+              setDocumentContent(newContent);
+              setLastUpdate(Date.now());
+              setIsSaved(false);
+              if (collaborative && socket) {
+                socket.emit('document-change', {
+                  id: document.id,
+                  content: newContent,
+                });
+              }
             }
           }),
         ],
@@ -116,9 +128,21 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         view.destroy();
       };
     }
-  }, [document, collaborative, socket, language]);
+  }, [document.content, collaborative, socket, language]);
 
-  const runCode = async () => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Date.now() - lastUpdate >= 2000) {
+        updateDocument({content: documentContent, document: document});
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [documentContent, lastUpdate]);
+
+  const runCode = async (setShowTerminal: Dispatch<SetStateAction<boolean>>) => {
+    setShowTerminal(true)
+    setLoading(true)
     if (editorView) {
       const result = await fetch('/api/execute', {
         method: 'POST',
@@ -135,12 +159,47 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
       setExecutionResult(resultJson.output);
       }
     }
+    setLoading(false)
   };
+
+  const updateDocument = async ({ content, document }: { content: string, document: { id: string } }) => {
+    try {
+      if (document.id === "1")
+        return
+      setLoading(true)
+      const response = await fetch(`/api/documents/${document.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update document: ${errorText}`);
+      }
+      setIsSaved(true);
+    } catch (error) {
+      console.error('Error updating document:', error);
+    }
+  };
+
 
   return (
     <div className={`w-full h-full ${className}`}>
       <CardTitle className="text-light-heading dark:text-dark-heading px-3 py-2 pr-6 flex items-center justify-between">
-        <p className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">{document?.title}</p>
+        <div className="flex justify-center gap-2">
+          <p className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">{document?.title}</p>
+          {isSaved ? <div className="items-center">
+            <CloudIcon className="ml-2 text-green-500" />
+            <p className="text-xs text-green-500 -mt-2">Saved</p>
+            </div>
+            : <div className="items-center">
+            <CloudOff className="ml-2 text-red-500" />
+            <p className="text-xs -mt-2 text-red-500">Unsaved</p>
+            </div>
+            }
+        </div>
         <div className="flex items-center gap-5 flex-row">
           <select
             className="mt-2 p-2 text-dark-heading rounded-lg text-xs outline-none bg-active"
@@ -151,11 +210,8 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
                   | 'javascript'
                   | 'python'
                   | 'java'
-                  | 'html'
-                  | 'json'
-                  | 'sql'
-                  | 'markdown'
-                  | 'cpp'
+                  | 'c++'
+                  | 'c'
                   | 'rust'
               )
             }
@@ -163,11 +219,12 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
             <option value="java">Java</option>
-            <option value="html">HTML</option>
+            {/*<option value="html">HTML</option>
             <option value="json">JSON</option>
             <option value="sql">SQL</option>
-            <option value="markdown">Markdown</option>
-            <option value="cpp">C++</option>
+            <option value="markdown">Markdown</option>*/}
+            <option value="c">C</option>
+            <option value="c++">C++</option>
             <option value="rust">Rust</option>
           </select>
           <Button
@@ -201,7 +258,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
               </div>
             )}
           </Button>
-          <Button className="mt-2 p-2 text-white rounded-lg" onClick={runCode}>
+          <Button className="mt-2 p-2 text-white rounded-lg" onClick={() => setShowTerminal && runCode(setShowTerminal)} variant="default">
             <ZapIcon size={20} />
           </Button>
         </div>
@@ -214,10 +271,11 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         <div
           ref={editorRef}
           className={` border border-gray-300 dark:border-gray-700  rounded-t-lg overflow-y-auto ${
-            showTerminal ? 'h-[47vh]' : 'h-[75vh] rounded-b-lg'
+            showTerminal ? 'h-[57vh]' : 'h-[81vh] rounded-b-lg'
           } dark:bg-neutral-900 dark:bg-opacity-65 bg-gray-950 bg-opacity-85`}
+          onBlur={() => updateDocument({content: documentContent, document})}
         />
-        {showTerminal && <Terminal executionResult={executionResult} />}
+        {showTerminal && <Terminal executionResult={executionResult} isLoading={loading}></Terminal>}
       </CardContent>
     </div>
   );

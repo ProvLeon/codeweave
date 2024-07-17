@@ -12,6 +12,8 @@ export default async function DashboardContent() {
   }
 
   return (
+    <div>
     <DashboardClient session={session} />
+    </div>
   )
 }
