@@ -8,28 +8,28 @@ datasource db {
 }
 
 model User {
-  id                 String                 @id @default(auto()) @map("_id") @db.ObjectId
-  email              String                 @unique
-  firstName          String
-  lastName           String
-  password           String
-  profile            Profile?
-  ownedDocuments     Document[]             @relation("OwnedDocuments")
-  revisions          Revision[]
-  ownedFolders       Folder[]               @relation("OwnedFolders")
-  collaboratedDocs   DocumentCollaborator[]
-  collaboratedFolders FolderCollaborator[]
-  messages           Message[]
-  messageReads       MessageRead[]
-  roomParticipations RoomParticipant[]
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
+  id                   String                 @id @default(auto()) @map("_id") @db.ObjectId
+  email                String                 @unique
+  firstName            String
+  lastName             String
+  password             String
+  profile              Profile?
+  ownedDocuments       Document[]             @relation("OwnedDocuments")
+  revisions            Revision[]
+  ownedFolders         Folder[]               @relation("OwnedFolders")
+  collaboratedDocs     DocumentCollaborator[]
+  collaboratedFolders  FolderCollaborator[]
+  messages             Message[]
+  messageReads         MessageRead[]
+  roomParticipations   RoomParticipant[]
+  projects             Project[]              @relation("UserProjects")
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 }
-
 
 model Profile {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  username      String
+  username  String
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique @db.ObjectId
 }
@@ -107,9 +107,9 @@ model Message {
 }
 
 model Room {
-  id         String            @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  messages   Message[]
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  messages     Message[]
   participants RoomParticipant[]
 }
 
@@ -132,4 +132,16 @@ model MessageRead {
   readAt    DateTime @default(now())
 
   @@unique([messageId, userId])
+}
+
+model Project {
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String
+  ownerId         String     @db.ObjectId
+  owner           User       @relation("UserProjects", fields: [ownerId], references: [id])
+  folderName      String
+  documentsCount  Int
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }

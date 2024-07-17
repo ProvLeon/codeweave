@@ -294,7 +294,7 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
           </div>
         )}*/}
       </div>
-      <ul className="space-y-2">{folders.map(renderFolder)}</ul>
+      <ul className="space-y-2">{Array.isArray(folders) && folders?.map(renderFolder)}</ul>
     </div>
   )
 }

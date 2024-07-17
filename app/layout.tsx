@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import Header from '@/components/Header'
 // import Footer from '@/components/Footer'
 import { SessionProvider } from 'next-auth/react'
+import { auth } from './api/auth/[...nextauth]/route'
 import Head from 'next/head'
 
 const inter = Inter({ subsets: ['latin'] })

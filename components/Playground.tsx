@@ -110,7 +110,7 @@ void main(void) {
       <div className="grid grid-rows-[1fr_auto] bg-light-background h-[90vh] dark:bg-dark-background rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-green-50 dark:from-slate-600 dark:to-slate-700">
         <div className="grid grid-cols-5 flex-1 overflow-hidden">
           <div className="col-span-1 row-span-1 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
-            <FolderTree userId={session.user.id} onDocumentSelect={setSelectedDocument} />
+            <FolderTree userId={session?.user.id} onDocumentSelect={setSelectedDocument} />
           </div>
           <div className="col-span-4 overflow-hidden">
             {selectedDocument ? (
@@ -121,7 +121,7 @@ void main(void) {
                 setShowTerminal={setShowTerminal}
                 language={language}
                 setLanguage={setLanguage}
-                collaborative={session.user.collaborative}
+                collaborative={session?.user.collaborative}
               />
             ) : (
               //{

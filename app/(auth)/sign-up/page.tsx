@@ -14,10 +14,12 @@ const RegisterPage = () => {
     lastName: '',
   })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true)
 
     const response = await fetch('/api/auth/sign-up', {
       method: 'POST',
@@ -34,6 +36,7 @@ const RegisterPage = () => {
     } else {
       setError(data.error)
     }
+    setLoading(false)
   }
 
   return (
@@ -93,8 +96,8 @@ const RegisterPage = () => {
           {error && <p className="text-red-500 self-center">{error}</p>}
           </CardContent>
           <CardFooter>
-            <Button type="submit" variant="default" className="w-full">
-              Sign Up
+            <Button type="submit" variant="default" className="w-full" loading={loading}>
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </Button>
           </CardFooter>
         </form>
