@@ -1,13 +1,9 @@
-// components/FolderTree.tsx
-"use client"
-
 import { useEffect, useState } from 'react'
-import { Folder, FolderOpen, File, Edit3, EditIcon, ChevronRight, ChevronDown, CircleSlashedIcon, TrashIcon, FileIcon, Plus } from 'lucide-react';
+import { Folder, FolderOpen, File, Edit3, EditIcon, ChevronRight, ChevronDown, CircleSlashedIcon, TrashIcon, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import LoadingSpinner from './LoadingSpinner';
 import CreateFileUi from './CreateFileUi';
-//import { Input } from './ui/input';
 
 // Fetcher function for SWR
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -35,19 +31,18 @@ interface FolderTreeProps {
   userId: string;
   onDocumentSelect: (document: Document) => void;
   className?: string;
+  projectId: string | string[];
 }
 
-const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) => {
-  const { data: folders, error } = useSWR<Folder[]>(`/api/folders?userId=${userId}`, fetcher, {
+const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTreeProps) => {
+  const { data: folders, error } = useSWR<Folder[]>(`/api/folders?userId=${userId}&projectId=${projectId}`, fetcher, {
     refreshInterval: 60000, // Revalidate every 60 seconds
   });
 
   const [newfolders, setNewFolders] = useState<Folder[]>([]);
-
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({})
   const [isHover, setIsHover] = useState<{ [key: string]: boolean }>({})
   const [editIcons, setEditIcons] = useState<{ [key: string]: boolean }>({})
-  const [showCreateFileUi, setShowCreateFileUi] = useState(false)
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState<string>('');
@@ -55,6 +50,7 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
 
   const router = useRouter()
+
   useEffect(() => {
     if (folders) {
       setNewFolders(folders);
@@ -62,18 +58,18 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
   }, [folders]);
 
   if (error) {
-
-    //router.push('/sign-in')
     return (
-    <div className='rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200'>
-      <h1 className='flex text-2xl font-bold mb-4 text-light-heading dark:text-light-background gap-2'>
-        No Data
-        <CircleSlashedIcon size={30} className="text-light-heading dark:text-light-background" />
-      </h1>
-      <p className='text-light-text dark:text-dark-text'>No Connection</p>
-    </div>)
-    }
-  if (!folders) return <LoadingSpinner/>
+      <div className='rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200'>
+        <h1 className='flex text-2xl font-bold mb-4 text-light-heading dark:text-light-background gap-2'>
+          No Data
+          <CircleSlashedIcon size={30} className="text-light-heading dark:text-light-background" />
+        </h1>
+        <p className='text-light-text dark:text-dark-text'>No Connection</p>
+      </div>
+    );
+  }
+
+  if (!folders) return <LoadingSpinner />
 
   const toggleFolder = (id: string) => {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
@@ -92,35 +88,83 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
     onDocumentSelect(document);
   }
 
+  const getNextFolderName = (baseName: string) => {
+    let maxNumber = 0;
+    newfolders.forEach(folder => {
+      const match = folder.name.match(new RegExp(`${baseName} \\((\\d+)\\)`));
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > maxNumber) {
+          maxNumber = number;
+        }
+      }
+    });
+    return `${baseName}${maxNumber + 1}`;
+  };
+
+  const getNextDocumentTitle = (baseTitle: string, folderId: string) => {
+    let maxNumber = 0;
+    const folder = newfolders.find(folder => folder.id === folderId);
+    folder?.documents.forEach(document => {
+      const match = document.title.match(new RegExp(`${baseTitle} \\((\\d+)\\)`));
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > maxNumber) {
+          maxNumber = number;
+        }
+      }
+    });
+    return `${baseTitle}${maxNumber + 1}`;
+  };
+
   const createFolder = async () => {
+    const newFolderName = await getNextFolderName("Folder");
     const response = await fetch("/api/folders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: "New Folder",
+        name: newFolderName,
+        projectId: projectId,
+        ownerId: userId,
       }),
     });
+
     if (response.ok) {
-      router.refresh();
+      const newFolder = await response.json();
+      setNewFolders(prev => [...prev, newFolder]);
+      mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
     }
   }
 
   const createDocument = async (folderId: string) => {
+    const newDocumentTitle = await getNextDocumentTitle("Document", folderId);
     const response = await fetch("/api/documents", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        title: "New Document",
+        title: newDocumentTitle,
         content: "",
         folderId: folderId,
+        ownerId: userId,
       }),
     });
+
     if (response.ok) {
-      router.refresh();
+      const newDocument = await response.json();
+      setNewFolders(prev => {
+        const updatedFolders = prev.map(folder => {
+          if (folder.id === folderId) {
+            return { ...folder, documents: [...folder.documents, newDocument] };
+          }
+          return folder;
+        });
+        return updatedFolders;
+      });
+      mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
     }
   }
 
@@ -132,13 +176,42 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
         });
 
         if (response.ok) {
-          router.refresh();
+          setNewFolders(prev => {
+            const updatedFolders = prev.map(folder => {
+              if (folder.id === document.folderId) {
+                return { ...folder, documents: folder.documents.filter(doc => doc.id !== document.id) };
+              }
+              return folder;
+            });
+            return updatedFolders;
+          });
+          mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
         } else {
           const data = await response.json();
           console.error('Failed to delete document:', data.error);
         }
       } catch (error) {
         console.error('Error deleting document:', error);
+      }
+    }
+  };
+
+  const deleteFolder = async (folder: Folder) => {
+    if (window.confirm(`Are you sure you want to delete ${folder.name} and all its contents?`)) {
+      try {
+        const response = await fetch(`/api/folders/${folder.id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setNewFolders(prev => prev.filter(f => f.id !== folder.id));
+          mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+        } else {
+          const data = await response.json();
+          console.error('Failed to delete folder:', data.error);
+        }
+      } catch (error) {
+        console.error('Error deleting folder:', error);
       }
     }
   };
@@ -164,7 +237,7 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
       }),
     });
     setEditingFolderId(null);
-    router.refresh();
+    mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
   };
 
   const handleDocumentTitleChange = async (documentId: string) => {
@@ -178,7 +251,7 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
       }),
     });
     setEditingDocumentId(null);
-    router.refresh();
+    mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
   };
 
   const handleDocumentClick = (document: Document) => {
@@ -210,12 +283,13 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onBlur={() => handleFolderNameChange(folder.id)}
-              className="ml-2 outline-nonebg-transparent border-b border-blue-500 focus:outline-none"
+              className="ml-2 bg-transparent border-b border-blue-500 focus:outline-none"
             />
           ) : (
             <span className="ml-2">{folder.name} ({folder.documents.length})</span>
           )}
           <Plus size={16} className="ml-2 cursor-pointer" onClick={() => createDocument(folder.id)} />
+          <TrashIcon size={16} className="ml-2 cursor-pointer text-red-400" onClick={() => deleteFolder(folder)} />
         </div>
         {expanded[folder.id] && (
           <>
@@ -279,24 +353,10 @@ const FolderTree = ({ userId, onDocumentSelect, className }: FolderTreeProps) =>
           Folders
           <Plus size={24} className="ml-2 cursor-pointer" onClick={createFolder} />
         </h2>
-        {/*<FileIcon size={30} className="mb-4 cursor-pointer" onClick={() => setShowCreateFileUi(true)}/>*/}
-        {/*{showCreateFileUi && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <CreateFileUi userId={userId} />
-              <button
-                onClick={() => setShowCreateFileUi(false)}
-                className="mt-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}*/}
       </div>
-      <ul className="space-y-2">{Array.isArray(folders) && folders?.map(renderFolder)}</ul>
+      <ul className="space-y-2">{Array.isArray(newfolders) && newfolders?.map(renderFolder)}</ul>
     </div>
   )
 }
 
-export default FolderTree
+export default FolderTree;

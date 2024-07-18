@@ -3,6 +3,30 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
+  try {
+    const projects = await prisma.project.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        folders: true,
+      },
+    });
+    return NextResponse.json(projects);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { title, description, folderName, documentsCount } = await request.json();
   const { id } = params;
@@ -17,8 +41,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       data: {
         title,
         description,
-        folderName,
-        documentsCount,
       },
     });
     return NextResponse.json(updatedProject);

@@ -130,15 +130,15 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
     }
   }, [document.content, collaborative, socket, language]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Date.now() - lastUpdate >= 2000) {
-        updateDocument({content: documentContent, document: document});
-      }
-    }, 2000);
+  //useEffect(() => {
+  //  const interval = setInterval(() => {
+  //    if (Date.now() - lastUpdate >= 2000) {
+  //      updateDocument({content: documentContent, document: document});
+  //    }
+  //  }, 2000);
 
-    return () => clearInterval(interval);
-  }, [documentContent, lastUpdate]);
+  //  return () => clearInterval(interval);
+  //}, [documentContent, lastUpdate]);
 
   const runCode = async (setShowTerminal: Dispatch<SetStateAction<boolean>>) => {
     setShowTerminal(true)

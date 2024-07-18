@@ -4,8 +4,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { Plus, Folder, FileText } from "lucide-react";
+import { Plus, Folder, FileText, Edit3, FoldersIcon } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
+import { Card, CardDescription, CardFooter, CardHeader } from "./ui/card";
+import { Button } from "./ui/button";
+
+type Folder = {
+  id: string;
+  name: string;
+  documents: Document[];
+};
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -15,6 +23,63 @@ export default function DashboardClient({ session }: { session: any }) {
   });
 
   const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [editProjectId, setEditProjectId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleCreateProject = async () => {
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          ownerId: session.user.id,
+        }),
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        router.refresh();
+      } else {
+        setErrorMessage("Failed to create project");
+        console.error("Failed to create project");
+      }
+    } catch (error) {
+      setErrorMessage(`Failed to create project: ${error}`);
+    }
+  };
+
+  const handleEditProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          description,
+        }),
+      });
+
+      if (response.ok) {
+        setEditProjectId(null);
+        setShowModal(false);
+        router.refresh();
+      } else {
+        setErrorMessage("Failed to update project");
+        console.error("Failed to update project");
+      }
+    } catch (error) {
+      setErrorMessage(`Failed to update project: ${error}`);
+    }
+  };
 
   if (error) {
     return (
@@ -38,47 +103,109 @@ export default function DashboardClient({ session }: { session: any }) {
         <h2 className="text-2xl font-semibold text-light-heading dark:text-dark-heading">
           Your Projects
         </h2>
-        <button
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          onClick={() => router.push("/dashboard/create-project")}
+        <Button
+          className="flex items-center px-4 py-2 text-white rounded-lg"
+          onClick={() => setShowModal(true)}
+          //onBlur={() => setShowModal(false)}
         >
           <Plus className="mr-2" />
           New Project
-        </button>
+        </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.isArray(projects) && projects.map((project: { id: string; title: string; description: string; folderName: string; documentsCount: number }) => (
-          <div
-            key={project.id}
-            className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-            onClick={() => router.push(`/projects/${project.id}`)}
+        {Array.isArray(projects) && projects.map((project: { id: string; title: string; description: string; folders: Folder[]; documentsCount: number }) => (
+
+          <Card
+          key={project.id}
+          className="p-4 relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+
           >
-            <h3 className="text-xl font-bold text-light-heading dark:text-dark-heading mb-2">
-              {project.title}
-            </h3>
+              <CardHeader>
+            <div className="flex items-center mb-2">
+              <h3 className="text-xl font-bold text-light-heading dark:text-dark-heading">
+                {project.title}
+              </h3>
+              <Edit3
+                className="cursor-pointer text-gray-500 dark:text-gray-400"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditProjectId(project.id);
+                  setTitle(project.title);
+                  setDescription(project.description);
+                  setShowModal(true);
+                }}
+              />
+            </div>
+            </CardHeader>
+            <CardDescription className="ml-6 text-gray-600 dark:text-gray-400 mb-4">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {project.description}
             </p>
+                  </CardDescription>
+                  <CardFooter className="flex justify-between items-center ">
             <div className="flex items-center text-gray-500 dark:text-gray-400">
               <Folder className="mr-2" />
-              {project.folderName}
+              {project.folders.length} Folders
             </div>
             <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2">
               <FileText className="mr-2" />
-              {project.documentsCount} Documents
+              {project.folders.reduce((acc, folder) => acc + (folder.documents?.length || 0), 0)} Documents
             </div>
-          </div>
+            <div className="absolute right-4 top-10 cursor-pointer hover:scale-110 transition-all duration-300"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/dashboard/projects/${project.id}/playground`);
+            }}
+            >
+              <FoldersIcon className=" text-gray-500 dark:text-gray-400 "/>
+              <p className="text-gray-500 dark:text-dark-text duration-300 text-xs -mt-1">open</p>
+            </div>
+            </CardFooter>
+          </Card>
         ))}
       </div>
-      <div className="flex justify-center mt-6">
-        <button
-          className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-          onClick={() => router.push("/dashboard/create-project")}
-        >
-          <Plus className="mr-2" />
-          Create New Project
-        </button>
-      </div>
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96"
+          >
+            <h2 className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">
+              {editProjectId ? "Edit Project" : "Create New Project"}
+            </h2>
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Title</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea
+                className="w-full px-3 py-2 border rounded-lg"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                onClick={editProjectId ? () => handleEditProject(editProjectId) : handleCreateProject}
+              >
+                {editProjectId ? "Update" : "Create"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

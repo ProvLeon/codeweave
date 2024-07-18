@@ -79,6 +79,18 @@ const DELETE = async (request: Request, { params }: { params: { id: string } }) 
   const documentId = params.id;
 
   try {
+    // Check if the document exists
+    const document = await prisma.document.findUnique({
+      where: {
+        id: documentId,
+        ownerId: userId,
+      },
+    });
+
+    if (!document) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
     // Delete associated revisions first
     await prisma.revision.deleteMany({
       where: {
@@ -100,4 +112,5 @@ const DELETE = async (request: Request, { params }: { params: { id: string } }) 
     return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
   }
 };
+
 export { GET, PUT, DELETE };

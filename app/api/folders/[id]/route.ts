@@ -58,7 +58,7 @@ const PUT = async (request: Request, { params }: { params: { id: string } }) => 
       data: {
         name,
         //parentId,
-      }
+      },
     });
     return NextResponse.json({message: "Folder updated", folder})
   } catch (error) {
@@ -67,26 +67,43 @@ const PUT = async (request: Request, { params }: { params: { id: string } }) => 
 }
 
 const DELETE = async (request: Request, { params }: { params: { id: string } }) => {
-  const session = await auth()
+  const session = await auth();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = session.user.id;
   const folderId = params.id;
 
   try {
-    const folder = await prisma.folder.deleteMany({
+    // Delete subfolders and documents first if necessary
+    await prisma.folder.deleteMany({
+      where: {
+        parentId: folderId,
+        ownerId: userId,
+      },
+    });
+
+    await prisma.document.deleteMany({
+      where: {
+        folderId: folderId,
+        ownerId: userId,
+      },
+    });
+
+    // Delete the folder
+    const folder = await prisma.folder.delete({
       where: {
         id: folderId,
         ownerId: userId,
       },
     });
-    return NextResponse.json({message: "Folder deleted", folder})
+
+    return NextResponse.json({ message: "Folder deleted", folder });
   } catch (error) {
-    return NextResponse.json({ error: "Error deleting folder" }, { status: 500 })
+    return NextResponse.json({ error: "Error deleting folder" }, { status: 500 });
   }
-}
+};
 
 export { GET, PUT, DELETE }

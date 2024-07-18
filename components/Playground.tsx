@@ -3,9 +3,11 @@ import { useState } from "react";
 import CodeEditor from "@/components/CodeEditor";
 import FolderTree from "@/components/FolderTree";
 import { Card } from "./ui/card";
+import { useParams } from "next/navigation";
 
 
 const Playground = ({session}: {session: any}) => {
+  const projectId = useParams().id;
   const [selectedDocument, setSelectedDocument] = useState<{ id: string, content: string, title: string } | null>(null);
   const [showTerminal, setShowTerminal] = useState(false);
   const [language, setLanguage] = useState<'javascript' | 'python' | 'java' | 'c++' | 'c' | 'rust'>('javascript');
@@ -110,7 +112,7 @@ void main(void) {
       <div className="grid grid-rows-[1fr_auto] bg-light-background h-[90vh] dark:bg-dark-background rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-green-50 dark:from-slate-600 dark:to-slate-700">
         <div className="grid grid-cols-5 flex-1 overflow-hidden">
           <div className="col-span-1 row-span-1 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
-            <FolderTree userId={session?.user.id} onDocumentSelect={setSelectedDocument} />
+            <FolderTree userId={session?.user.id} onDocumentSelect={setSelectedDocument} projectId={projectId} />
           </div>
           <div className="col-span-4 overflow-hidden">
             {selectedDocument ? (

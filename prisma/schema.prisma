@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
@@ -50,16 +51,18 @@ model Document {
 }
 
 model Folder {
-  id              String                 @id @default(auto()) @map("_id") @db.ObjectId
-  name            String                 @unique
-  ownerId         String                 @db.ObjectId
-  owner           User                   @relation("OwnedFolders", fields: [ownerId], references: [id])
-  parentId        String?                @db.ObjectId
-  parent          Folder?                @relation("Subfolders", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subfolders      Folder[]               @relation("Subfolders")
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  name            String     @unique
+  ownerId         String     @db.ObjectId
+  owner           User       @relation("OwnedFolders", fields: [ownerId], references: [id])
+  parentId        String?    @db.ObjectId
+  parent          Folder?    @relation("Subfolders", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subfolders      Folder[]   @relation("Subfolders")
   documents       Document[]
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
+  projectId       String     @db.ObjectId
+  project         Project    @relation("ProjectFolders", fields: [projectId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
   collaborators   FolderCollaborator[]
   deletedAt       DateTime?
 }
@@ -140,8 +143,7 @@ model Project {
   description     String
   ownerId         String     @db.ObjectId
   owner           User       @relation("UserProjects", fields: [ownerId], references: [id])
-  folderName      String
-  documentsCount  Int
+  folders         Folder[]   @relation("ProjectFolders")
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

@@ -35,12 +35,15 @@ export default function Header() {
         <nav className="flex items-center space-x-4">
           {session ? (
             <>
-              {pathname === "/dashboard" ? <Link href="/dashboard/playground" >
-                <Button variant="ghost">
-                <span className='text-sm'>Playground</span>
-                  <Code2Icon/>
-                </Button>
-              </Link>:
+              {pathname === "/dashboard" ?
+              //<Link href={`/dashboard/projects?userId=${session.user.id}`} >
+              //  <Button variant="ghost">
+              //  <span className='text-sm'>Playground</span>
+              //    <Code2Icon/>
+              //  </Button>
+              //</Link>
+              ""
+              :
               <Link  href="/dashboard">
                 <Button variant="ghost">Dashboard</Button>
               </Link>}

@@ -18,7 +18,8 @@ const GET = async (request: Request) => {
     include: {
       subfolders: true,
       documents: true,
-    }
+    },
+    cacheStrategy: { swr: 60, ttl: 60 },
   });
   return NextResponse.json(folders)
 }
@@ -31,9 +32,9 @@ const POST = async (request: Request) => {
   }
 
   const userId = session.user.id
-  const { name, parentId } = await request.json();
+  const { name, parentId, projectId } = await request.json();
 
-  if (!name) {
+  if (!name || !projectId) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
@@ -42,7 +43,12 @@ const POST = async (request: Request) => {
       name,
       ownerId: userId,
       parentId,
-    }
+      projectId,
+    },
+    include: {
+      subfolders: true,
+      documents: true,
+    },
   });
   return NextResponse.json(folder)
 }
