@@ -50,10 +50,11 @@ const PUT = async (request: Request, {params}: { params:{id:string}}) => {
   //if (!title || !content) {
   //  return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   //}
+  try {
 
-  const document = await prisma.document.updateMany({
-    where: {
-      id: documentId,
+    const document = await prisma.document.update({
+      where: {
+        id: documentId,
       ownerId: userId,
     },
     data: {
@@ -61,9 +62,14 @@ const PUT = async (request: Request, {params}: { params:{id:string}}) => {
       content,
       folderId,
     },
+    //cacheStrategy: { ttl: 60 }
   })
-  if (document.count === 0) {
+
+  if (!document) {
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  }
+    } catch(error) {
+      return NextResponse.json({error: "An Error was encountered"}, { status: 500})
   }
 
   return NextResponse.json({ message: "Document updated successfully" }, { status: 200 });

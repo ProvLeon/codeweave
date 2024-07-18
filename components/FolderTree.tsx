@@ -39,7 +39,6 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
     refreshInterval: 60000, // Revalidate every 60 seconds
   });
 
-  const [newfolders, setNewFolders] = useState<Folder[]>([]);
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({})
   const [isHover, setIsHover] = useState<{ [key: string]: boolean }>({})
   const [editIcons, setEditIcons] = useState<{ [key: string]: boolean }>({})
@@ -48,14 +47,23 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
   const [newFolderName, setNewFolderName] = useState<string>('');
   const [newDocumentTitle, setNewDocumentTitle] = useState<string>('');
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [localFolders, setLocalFolders] = useState<Folder[]>([]);
+  const [localDocuments, setLocalDocuments] = useState<{ [key: string]: Document }>({});
 
   const router = useRouter()
 
   useEffect(() => {
     if (folders) {
-      setNewFolders(folders);
+      setLocalFolders(folders);
+      //const localDocs: { [key: string]: Document } = {};
+      //folders.forEach(folder => {
+      //  folder.documents.forEach(doc => {
+      //    localDocs[doc.id] = doc;
+      //  });
+      //});
+      //setLocalDocuments(localDocs);
     }
-  }, [folders]);
+  }, [folders, localFolders]);
 
   if (error) {
     return (
@@ -83,15 +91,10 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
     setIsHover(prev => ({ ...prev, [id]: false }));
   }
 
-  const toggleEditIcon = (document: Document) => {
-    setEditIcons(prev => ({ ...prev, [document.id]: !prev[document.id] }));
-    onDocumentSelect(document);
-  }
-
   const getNextFolderName = (baseName: string) => {
     let maxNumber = 0;
-    newfolders.forEach(folder => {
-      const match = folder.name.match(new RegExp(`${baseName} \\((\\d+)\\)`));
+    localFolders.forEach(folder => {
+      const match = folder.name.match(new RegExp(`${baseName}(\\d+)`));
       if (match) {
         const number = parseInt(match[1], 10);
         if (number > maxNumber) {
@@ -104,9 +107,9 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
   const getNextDocumentTitle = (baseTitle: string, folderId: string) => {
     let maxNumber = 0;
-    const folder = newfolders.find(folder => folder.id === folderId);
+    const folder = localFolders.find(folder => folder.id === folderId);
     folder?.documents.forEach(document => {
-      const match = document.title.match(new RegExp(`${baseTitle} \\((\\d+)\\)`));
+      const match = document.title.match(new RegExp(`${baseTitle}(\\d+)`));
       if (match) {
         const number = parseInt(match[1], 10);
         if (number > maxNumber) {
@@ -133,7 +136,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
     if (response.ok) {
       const newFolder = await response.json();
-      setNewFolders(prev => [...prev, newFolder]);
+      setLocalFolders(prev => [...prev, newFolder]);
       mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
     }
   }
@@ -155,7 +158,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
     if (response.ok) {
       const newDocument = await response.json();
-      setNewFolders(prev => {
+      await setLocalFolders(prev => {
         const updatedFolders = prev.map(folder => {
           if (folder.id === folderId) {
             return { ...folder, documents: [...folder.documents, newDocument] };
@@ -164,6 +167,8 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
         return updatedFolders;
       });
+      setLocalDocuments(prev => ({ ...prev, [newDocument.id]: newDocument }));
+      setNewDocumentTitle(newDocumentTitle); // Update the state with the new document title
       mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
     }
   }
@@ -176,7 +181,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
 
         if (response.ok) {
-          setNewFolders(prev => {
+          setLocalFolders(prev => {
             const updatedFolders = prev.map(folder => {
               if (folder.id === document.folderId) {
                 return { ...folder, documents: folder.documents.filter(doc => doc.id !== document.id) };
@@ -204,7 +209,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
 
         if (response.ok) {
-          setNewFolders(prev => prev.filter(f => f.id !== folder.id));
+          setLocalFolders(prev => prev.filter(f => f.id !== folder.id));
           mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
         } else {
           const data = await response.json();
@@ -227,6 +232,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
   };
 
   const handleFolderNameChange = async (folderId: string) => {
+    setLocalFolders(prev => prev.map(folder => folder.id === folderId ? { ...folder, name: newFolderName } : folder));
     await fetch(`/api/folders/${folderId}`, {
       method: "PUT",
       headers: {
@@ -241,6 +247,19 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
   };
 
   const handleDocumentTitleChange = async (documentId: string) => {
+    setLocalDocuments(prev => ({ ...prev, [documentId]: { ...prev[documentId], title: newDocumentTitle } }));
+    setLocalFolders(prev => {
+      const updatedFolders = prev.map(folder => {
+        if (folder.documents.some(doc => doc.id === documentId)) {
+          return {
+            ...folder,
+            documents: folder.documents.map(doc => doc.id === documentId ? { ...doc, title: newDocumentTitle } : doc)
+          };
+        }
+        return folder;
+      });
+      return updatedFolders;
+    });
     await fetch(`/api/documents/${documentId}`, {
       method: "PUT",
       headers: {
@@ -265,6 +284,8 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         <div
           onClick={() => toggleFolder(folder.id)}
           onDoubleClick={() => handleFolderDoubleClick(folder)}
+          onMouseEnter={() => handleMouseEnter(folder.id)}
+          onMouseLeave={() => handleMouseLeave(folder.id)}
           className="flex items-center cursor-pointer hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200 p-2"
         >
           {expanded[folder.id] ? (
@@ -288,8 +309,12 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
           ) : (
             <span className="ml-2">{folder.name} ({folder.documents.length})</span>
           )}
+          {isHover[folder.id] && (
+            <>
           <Plus size={16} className="ml-2 cursor-pointer" onClick={() => createDocument(folder.id)} />
-          <TrashIcon size={16} className="ml-2 cursor-pointer text-red-400" onClick={() => deleteFolder(folder)} />
+            <TrashIcon size={16} className="ml-2 cursor-pointer text-red-400" onClick={() => deleteFolder(folder)} />
+            </>
+          )}
         </div>
         {expanded[folder.id] && (
           <>
@@ -308,7 +333,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
                     onDoubleClick={() => handleDocumentDoubleClick(document)}
                   >
                     <div>
-                      <div className='flex items-center gap-2'>
+                      <div className='flex items-center gap-2 relative'>
                         <File size={16} />
                         {editingDocumentId === document.id ? (
                           <input
@@ -321,14 +346,16 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
                         ) : (
                           <span className="ml-2">{document.title}</span>
                         )}
+                        <div className='flex items-center gap-2 absolute right-0 top-0'>
                         {isHover[document.id] && (
                           <div className="ml-2 cursor-pointer">
                             {editIcons[document.id] ? <Edit3 size={16} /> : <EditIcon size={16} />}
                           </div>
                         )}
-                        <div onClick={() => deleteDocument(document)} className="ml-2 cursor-pointer">
-                          <TrashIcon size={16} className="text-red-400" />
-                        </div>
+                        {isHover[document.id] && (
+                          <TrashIcon size={16} className="ml-2 cursor-pointer text-red-400" onClick={() => deleteDocument(document)} />
+                        )}
+                            </div>
                       </div>
                       <div>
                         <p className="pl-8 text-[9px] text-gray-400 dark:text-dark-text no-underline">
@@ -354,7 +381,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
           <Plus size={24} className="ml-2 cursor-pointer" onClick={createFolder} />
         </h2>
       </div>
-      <ul className="space-y-2">{Array.isArray(newfolders) && newfolders?.map(renderFolder)}</ul>
+      <ul className="space-y-2">{Array.isArray(localFolders) && localFolders.map(renderFolder)}</ul>
     </div>
   )
 }

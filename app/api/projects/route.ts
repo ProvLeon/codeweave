@@ -17,7 +17,13 @@ export async function GET(request: Request) {
         ownerId: userId
       },
       include: {
-        folders: true,
+        //folders: true,
+        folders: {
+          include: {
+            documents: true,
+          }
+        }
+        //documents: true,
       }
     });
     return NextResponse.json(projects);

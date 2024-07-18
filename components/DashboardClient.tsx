@@ -1,13 +1,21 @@
 // components/DashboardClient.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Plus, Folder, FileText, Edit3, FoldersIcon } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import { Card, CardDescription, CardFooter, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
+
+type Document = {
+  id: string;
+  title: string;
+  content: string;
+  folderId: string;
+  updatedAt: string;
+};
 
 type Folder = {
   id: string;
@@ -92,7 +100,10 @@ export default function DashboardClient({ session }: { session: any }) {
     );
   }
 
-  if (!projects) return <LoadingSpinner />;
+  if (!projects) return <div className="h-screen my-[200px]">
+    <LoadingSpinner />
+    </div>
+  //console.log(projects);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -106,68 +117,64 @@ export default function DashboardClient({ session }: { session: any }) {
         <Button
           className="flex items-center px-4 py-2 text-white rounded-lg"
           onClick={() => setShowModal(true)}
-          //onBlur={() => setShowModal(false)}
         >
           <Plus className="mr-2" />
           New Project
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.isArray(projects) && projects.map((project: { id: string; title: string; description: string; folders: Folder[]; documentsCount: number }) => (
-
+        {Array.isArray(projects) && projects.map((project: { id: string; title: string; description: string; folders: Folder[]; }) => (
           <Card
-          key={project.id}
-          className="p-4 relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-
+            key={project.id}
+            className="p-4 relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
           >
-              <CardHeader>
-            <div className="flex items-center mb-2">
-              <h3 className="text-xl font-bold text-light-heading dark:text-dark-heading">
-                {project.title}
-              </h3>
-              <Edit3
-                className="cursor-pointer text-gray-500 dark:text-gray-400"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditProjectId(project.id);
-                  setTitle(project.title);
-                  setDescription(project.description);
-                  setShowModal(true);
-                }}
-              />
-            </div>
+            <CardHeader>
+              <div className="flex items-center mb-2">
+                <h3 className="text-xl font-bold text-light-heading dark:text-dark-heading">
+                  {project.title}
+                </h3>
+                <Edit3
+                  className="cursor-pointer text-gray-500 dark:text-gray-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditProjectId(project.id);
+                    setTitle(project.title);
+                    setDescription(project.description);
+                    setShowModal(true);
+                  }}
+                />
+              </div>
             </CardHeader>
             <CardDescription className="ml-6 text-gray-600 dark:text-gray-400 mb-4">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {project.description}
-            </p>
-                  </CardDescription>
-                  <CardFooter className="flex justify-between items-center ">
-            <div className="flex items-center text-gray-500 dark:text-gray-400">
-              <Folder className="mr-2" />
-              {project.folders.length} Folders
-            </div>
-            <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2">
-              <FileText className="mr-2" />
-              {project.folders.reduce((acc, folder) => acc + (folder.documents?.length || 0), 0)} Documents
-            </div>
-            <div className="absolute right-4 top-10 cursor-pointer hover:scale-110 transition-all duration-300"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/dashboard/projects/${project.id}/playground`);
-            }}
-            >
-              <FoldersIcon className=" text-gray-500 dark:text-gray-400 "/>
-              <p className="text-gray-500 dark:text-dark-text duration-300 text-xs -mt-1">open</p>
-            </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {project.description}
+              </p>
+            </CardDescription>
+            <CardFooter className="flex justify-between items-center">
+              <div className="flex items-center text-gray-500 dark:text-gray-400">
+                <Folder className="mr-2" />
+                {project.folders.length} Folders
+              </div>
+              <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2">
+                <FileText className="mr-2" />
+                {project.folders.reduce((acc, folder) => acc + (folder.documents?.length || 0), 0)} Documents
+              </div>
+              <div className="absolute right-4 top-10 cursor-pointer hover:scale-110 transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/dashboard/projects/${project.id}/playground`);
+                }}
+              >
+                <FoldersIcon className="text-gray-500 dark:text-gray-400" />
+                <p className="text-gray-500 dark:text-dark-text duration-300 text-xs -mt-1">open</p>
+              </div>
             </CardFooter>
           </Card>
         ))}
       </div>
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96"
-          >
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
             <h2 className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">
               {editProjectId ? "Edit Project" : "Create New Project"}
             </h2>

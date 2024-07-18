@@ -166,7 +166,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
     try {
       if (document.id === "1")
         return
-      setLoading(true)
+      //setLoading(true)
       const response = await fetch(`/api/documents/${document.id}`, {
         method: 'PUT',
         headers: {
@@ -275,7 +275,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           } dark:bg-neutral-900 dark:bg-opacity-65 bg-gray-950 bg-opacity-85`}
           onBlur={() => updateDocument({content: documentContent, document})}
         />
-        {showTerminal && <Terminal executionResult={executionResult} isLoading={loading}></Terminal>}
+        {showTerminal && <Terminal executionResult={executionResult} isLoading={loading}/>}
       </CardContent>
     </div>
   );

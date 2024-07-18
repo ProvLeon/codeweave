@@ -5,15 +5,30 @@ import { Button } from './ui/button'
 import ThemeToggle  from './ThemeToggle'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Code2Icon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function Header() {
   const { data: session } = useSession()
-  //const theme = getTheme()
   const pathname = usePathname()
+  const [isSticky, setIsSticky] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 30) {
+        setIsSticky(true)
+      } else {
+        setIsSticky(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   return (
-    <header className="bg-background border-b border-light-border dark:border-dark-border">
+    <header className={`z-50 bg-light-background bg-opacity-70 dark:bg-opacity-70 dark:bg-dark-background border-b border-light-border dark:border-dark-border transition-all duration-30 ${isSticky ? 'sticky top-2 backdrop-blur-md w-4/5 mx-auto rounded-xl px-2' : ''}`}>
       <div className="container mx-auto px-2 py-2 flex justify-between items-center">
         <Link href="/">
           <Image
@@ -36,12 +51,6 @@ export default function Header() {
           {session ? (
             <>
               {pathname === "/dashboard" ?
-              //<Link href={`/dashboard/projects?userId=${session.user.id}`} >
-              //  <Button variant="ghost">
-              //  <span className='text-sm'>Playground</span>
-              //    <Code2Icon/>
-              //  </Button>
-              //</Link>
               ""
               :
               <Link  href="/dashboard">
@@ -60,6 +69,17 @@ export default function Header() {
             </>
           )}
           <ThemeToggle />
+          {session &&
+          <Link href="/api/profile">
+                {/*<a>*/}
+                  {session.user &&
+                  <div className='flex gap-2'>
+                    <Image src={session.user.imageUrl || '/assets/icons8-user-96.png'} alt="Profile Image" width={40} height={40} className='text-light-background'/>
+                    <span>{session.user.userName}</span>
+                  </div>
+                  }
+              </Link>
+          }
         </nav>
       </div>
     </header>
