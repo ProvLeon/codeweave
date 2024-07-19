@@ -24,7 +24,7 @@ const getUser = async (userDetails: {email: string, password: string}): Promise<
   if (!isPasswordValid) {
     return null;
   }
-  return { id: user.id, email: user.email, name: `${user.firstName} ${user.lastName}` };
+  return { id: user.id, email: user.email, name: `${user.firstName} ${user.lastName}`, firstName: user.firstName, lastName: user.lastName, DOB: user.dob };
 }
 
 export const authOptions = {

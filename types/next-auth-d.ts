@@ -6,8 +6,11 @@ declare module "next-auth" {
       id: string
       email: string
       name: string
+      firstName: string
+      lastName: string
       imageUrl: string
       userName: string
+      DOB: string | Date
     }
   }
 }

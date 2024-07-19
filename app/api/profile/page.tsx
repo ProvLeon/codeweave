@@ -1,11 +1,15 @@
 import React from 'react';
-import { getSession } from '@/lib/Session';
-import ProfileClient from './ProfileClient';
+import { getSessionServer } from '@/lib/Session';
+import ProfileClient from '../../../components/ProfileClient';
+import { redirect } from 'next/navigation';
 
-const ProfilePage = async () => {
-  const session = await getSession();
+const ProfilePage =  async () => {
+  const session = await getSessionServer();
+  if (session === null) {
+    return redirect('/sign-in');
+  }
 
-  return <ProfileClient session={session} />;
+  return (session && <ProfileClient session={session} />);
 };
 
 export default ProfilePage;

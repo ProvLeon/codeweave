@@ -3,18 +3,32 @@ import type { NextAuthConfig } from "next-auth";
 import { Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
+type CustomUser = User & {
+  firstName?: string;
+  lastName?: string;
+  dob?:  string | Date ;
+};
+
 export const authConfig = {
   callbacks: {
     async session({ session, token }: {session: Session, token: JWT}) {
       try {
         console.log('Session callback called with token:', token);
         if (token.name && token.email && typeof token.id === 'string') {
+          // get user
+          const user = await prisma.user.findUnique({
+            where: { id: token.id },
+          });
+          // get profile
           const profile = await prisma.profile.findUnique({
             where: { userId: token.id },
           });
-
+          // set session
           session.user.id = token.id || '';
           session.user.name = token.name;
+          session.user.firstName = user?.firstName || '';
+          session.user.lastName = user?.lastName || '';
+          session.user.DOB = user?.dob || '';
           session.user.email = token.email;
           session.user.imageUrl = profile?.imageUrl || '';
           session.user.userName = profile?.username || '';

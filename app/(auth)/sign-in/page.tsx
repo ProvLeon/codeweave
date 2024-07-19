@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useTheme } from 'next-themes';
+import { Link } from '@mui/material';
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -78,6 +79,10 @@ export default function LoginPage() {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -95,6 +100,10 @@ export default function LoginPage() {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -104,10 +113,11 @@ export default function LoginPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter>
+            <CardFooter className='flex flex-col gap-2'>
               <Button type="submit" variant="default" className="w-full" loading={loading}>
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
+              <p className='text-light-text dark:text-dark-text'>Don't have an account? <Link href="/sign-up">Sign Up</Link></p>
             </CardFooter>
           </form>
         </Card>

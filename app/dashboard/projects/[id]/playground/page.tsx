@@ -1,10 +1,10 @@
 import Playground from '@/components/Playground'
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+import { getSessionServer } from '@/lib/Session'
 import React from 'react'
 import { redirect } from 'next/navigation'
 
 const PlaygroundContent = async () => {
-  const session = await auth()
+  const session = await getSessionServer()
   if (!session) {
     return redirect('/sign-up')
   }

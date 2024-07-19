@@ -8,6 +8,7 @@ import { Plus, Folder, FileText, Edit3, FoldersIcon } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import { Card, CardDescription, CardFooter, CardHeader } from "./ui/card";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 type Document = {
   id: string;
@@ -26,7 +27,7 @@ type Folder = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DashboardClient({ session }: { session: any }) {
-  const { data: projects, error } = useSWR(`/api/projects?userId=${session.user.id}`, fetcher, {
+  const { data: projects, error } = useSWR(`/api/projects?userId=${session?.user.id}`, fetcher, {
     refreshInterval: 60000, // Revalidate every 60 seconds
   });
 
@@ -89,20 +90,43 @@ export default function DashboardClient({ session }: { session: any }) {
     }
   };
 
-  if (error) {
+// ... existing code ...
+if (error || (projects === undefined || projects.folders === undefined)) {
     return (
       <div className="rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200">
-        <h1 className="flex text-2xl font-bold mb-4 text-light-heading dark:text-light-background gap-2">
-          No Data
-        </h1>
-        <p className="text-light-text dark:text-dark-text">No Connection</p>
+        {error ?
+        <>
+          <h1 className="flex text-2xl font-bold mb-4 text-light-heading dark:text-light-background gap-2">
+            No Data
+          </h1>
+          <p className="text-light-text dark:text-dark-text">No Connection</p>
+        </>
+        :
+        <>
+          <div className="flex items-center gap-2 mb-5">
+            <h1 className="flex text-2xl font-bold text-light-heading dark:text-light-background gap-2">
+              No Projects
+            </h1>
+            <Image src="/assets/icons8-about-420.svg" alt="Team Collaboration" className=" rounded-lg " width={30} height={30} />
+          </div>
+          <Button
+          className="flex items-center px-4 py-2 text-white rounded-lg"
+          onClick={() => setShowModal(true)}
+            >
+          <Plus className="mr-2" />
+          New Project
+          </Button>
+        </>
+        }
       </div>
     );
   }
 
-  if (!projects) return <div className="h-screen my-[200px]">
+  if (!projects) {
+    return (<div className="h-screen my-[200px]">
     <LoadingSpinner />
     </div>
+    )}
   //console.log(projects);
 
   return (

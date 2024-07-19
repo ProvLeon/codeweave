@@ -10,7 +10,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;

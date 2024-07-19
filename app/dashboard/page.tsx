@@ -1,19 +1,21 @@
 // app/dashboard/DashboardContent.tsx
-
-import { auth } from "@/app/api/auth/[...nextauth]/route"
+"use client"
 import DashboardClient from "@/components/DashboardClient"
+import { useClientSession, getSessionServer } from "@/lib/Session"
 import { redirect } from "next/navigation"
 
-export default async function DashboardContent() {
-  const session = await auth()
-  if (!session) {
+export default  function DashboardContent() {
+  const {session, status} = useClientSession()
+  if (status === "unauthenticated") {
     console.log({ "error": session })
     redirect("/sign-in")
   }
 
   return (
+    session?.user
+    &&
     <div>
-    <DashboardClient session={session} />
+      <DashboardClient session={session} />
     </div>
   )
 }

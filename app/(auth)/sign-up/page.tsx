@@ -2,13 +2,14 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useTheme } from 'next-themes';
+import { Link } from '@mui/material'
 
 const RegisterPage = () => {
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [userDetails, setUserDetails] = useState({
     email: '',
     password: '',
@@ -19,6 +20,13 @@ const RegisterPage = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter()
+
+  useEffect(() => {
+    // Ensure the theme is set correctly on the client
+    if (theme === 'dark' || theme === 'light') {
+      setTheme(theme);
+    }
+  }, [theme, setTheme]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,7 +57,7 @@ const RegisterPage = () => {
   });
 
   return (
-    <ThemeProvider theme={muiTheme}>
+    //<ThemeProvider theme={muiTheme}>
       <div className="flex justify-center items-center min-h-screen bg-light-background dark:bg-dark-background">
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -71,6 +79,10 @@ const RegisterPage = () => {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -88,6 +100,10 @@ const RegisterPage = () => {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -104,6 +120,10 @@ const RegisterPage = () => {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -122,6 +142,10 @@ const RegisterPage = () => {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
@@ -139,20 +163,25 @@ const RegisterPage = () => {
                     style: {
                       borderRadius: '8px',
                     },
+                    className: 'text-light-text dark:text-dark-text'
+                  }}
+                  InputLabelProps={{
+                    className: 'text-light-text dark:text-dark-text'
                   }}
                 />
               </div>
             {error && <p className="text-red-500 self-center">{error}</p>}
             </CardContent>
-            <CardFooter>
+            <CardFooter className='flex flex-col gap-2'>
               <Button type="submit" variant="default" className="w-full" loading={loading}>
                 {loading ? 'Signing Up...' : 'Sign Up'}
               </Button>
+              <p className='text-light-text dark:text-dark-text'>Already have an account? <Link href="/sign-in">Sign In</Link></p>
             </CardFooter>
           </form>
         </Card>
       </div>
-    </ThemeProvider>
+    //</ThemeProvider>
   )
 }
 
