@@ -297,11 +297,11 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
                           <span className="ml-2">{document.title}</span>
                         )}
                         <div className='flex items-center gap-2 absolute right-0 top-0'>
-                        {isHover[document.id] && (
+                        {/*{isHover[document.id] && (
                           <div className="ml-2 cursor-pointer">
-                            {editIcons[document.id] ? <Edit3 size={16} /> : <EditIcon size={16} />}
+                            { <Edit3 size={16} /> }
                           </div>
-                        )}
+                        )}*/}
                         {isHover[document.id] && (
                           <TrashIcon size={16} className="ml-2 cursor-pointer text-red-400" onClick={() => deleteDocument(document)} />
                         )}
