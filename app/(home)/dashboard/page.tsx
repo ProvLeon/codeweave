@@ -1,14 +1,16 @@
 // components/DashboardClient.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Plus, Folder, FileText, Edit3, FoldersIcon } from "lucide-react";
-import LoadingSpinner from "./LoadingSpinner";
-import { Card, CardDescription, CardFooter, CardHeader } from "./ui/card";
-import { Button } from "./ui/button";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { Card, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import withAuth from "@/components/withAuth";
+import { useUser } from "@/contexts/UserContext";
 
 type Document = {
   id: string;
@@ -26,17 +28,22 @@ type Folder = {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function DashboardClient({ session }: { session: any }) {
-  const { data: projects, error } = useSWR(`/api/projects?userId=${session?.user.id}`, fetcher, {
-    refreshInterval: 60000, // Revalidate every 60 seconds
-  });
-
+const DashboardClient = () => {
+  const { user } = useUser();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editProjectId, setEditProjectId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const { data: projects, error } = useSWR(
+    user && !user?.signedOut ? `/api/projects?userId=${user?.id}` : null, // Only fetch if user is defined
+    fetcher,
+    {
+      refreshInterval: 60000, // Revalidate every 60 seconds
+    }
+  );
 
   const handleCreateProject = async () => {
     try {
@@ -48,7 +55,7 @@ export default function DashboardClient({ session }: { session: any }) {
         body: JSON.stringify({
           title,
           description,
-          ownerId: session.user.id,
+          ownerId: user.id,
         }),
       });
 
@@ -90,8 +97,8 @@ export default function DashboardClient({ session }: { session: any }) {
     }
   };
 
-// ... existing code ...
-if (error || (projects === undefined || projects.folders === undefined)) {
+  // ... existing code ...
+  if (error || (projects === undefined)) {
     return (
       <div className="rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200">
         {error ?
@@ -118,21 +125,63 @@ if (error || (projects === undefined || projects.folders === undefined)) {
           </Button>
         </>
         }
+        {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">
+              {editProjectId ? "Edit Project" : "Create New Project"}
+            </h2>
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Title</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-lg"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Description</label>
+              <textarea
+                className="w-full px-3 py-2 border rounded-lg"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                onClick={editProjectId ? () => handleEditProject(editProjectId) : handleCreateProject}
+              >
+                {editProjectId ? "Update" : "Create"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     );
   }
 
-  if (!projects) {
-    return (<div className="h-screen my-[200px]">
-    <LoadingSpinner />
-    </div>
-    )}
+  //if (!projects) {
+  //  return (<div className="h-screen my-[200px]">
+  //  <LoadingSpinner />
+  //  </div>
+  //  )}
   //console.log(projects);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-light-heading dark:text-dark-heading mb-6">
-        Welcome, {session?.user.name}
+        Welcome, {user.name}
       </h1>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-light-heading dark:text-dark-heading">
@@ -174,14 +223,14 @@ if (error || (projects === undefined || projects.folders === undefined)) {
                 {project.description}
               </p>
             </CardDescription>
-            <CardFooter className="flex justify-between items-center">
+            <CardFooter className="flex justify-between items-center mt-2">
               <div className="flex items-center text-gray-500 dark:text-gray-400">
-                <Folder className="mr-2" />
-                {project.folders.length} Folders
+                <Folder className="mr-1" />
+                {project.folders.length}<p>Folders</p>
               </div>
-              <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2">
-                <FileText className="mr-2" />
-                {project.folders.reduce((acc, folder) => acc + (folder.documents?.length || 0), 0)} Documents
+              <div className="flex items-center text-gray-500 dark:text-gray-400 ">
+                <FileText className="mr-1" />
+                {project.folders.reduce((acc, folder) => acc + (folder.documents?.length || 0), 0)}<p>Documents</p>
               </div>
               <div className="absolute right-4 top-10 cursor-pointer hover:scale-110 transition-all duration-300"
                 onClick={(e) => {
@@ -240,3 +289,5 @@ if (error || (projects === undefined || projects.folders === undefined)) {
     </div>
   );
 }
+
+export default withAuth(DashboardClient)

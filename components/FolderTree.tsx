@@ -1,99 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import { Folder, FolderOpen, File, Edit3, EditIcon, ChevronRight, ChevronDown, CircleSlashedIcon, TrashIcon, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import useSWR, { mutate } from 'swr';
+//import { useRouter } from 'next/navigation';
+import { useProject } from '@/contexts/ProjectContext';
 import LoadingSpinner from './LoadingSpinner';
-import CreateFileUi from './CreateFileUi';
-
-// Fetcher function for SWR
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-interface Document {
-  id: string
-  title: string
-  content: string
-  folderId: string
-  updatedAt: string
-}
-
-interface Folder {
-  id: string
-  name: string
-  parentId: string
-  createdAt: string
-  updatedAt: string
-  ownerId: string
-  subfolders: Folder[]
-  documents: Document[]
-}
+//import CreateFileUi from './CreateFileUi';
+import { Folder as FolderType, Document as DocumentType } from '@/types';
 
 interface FolderTreeProps {
   userId: string;
-  onDocumentSelect: (document: Document) => void;
+  onDocumentSelect: (document: DocumentType) => void;
   className?: string;
   projectId: string | string[];
 }
 
 const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTreeProps) => {
-  const { data: folders, error } = useSWR<Folder[]>(`/api/folders?userId=${userId}&projectId=${projectId}`, fetcher, {
-    refreshInterval: 60000, // Revalidate every 60 seconds
-  });
-
-  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({})
-  const [isHover, setIsHover] = useState<{ [key: string]: boolean }>({})
-  const [editIcons, setEditIcons] = useState<{ [key: string]: boolean }>({})
+  const { folders, setFolders, refreshFolders } = useProject();
+  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+  const [isHover, setIsHover] = useState<{ [key: string]: boolean }>({});
+  const [editIcons, setEditIcons] = useState<{ [key: string]: boolean }>({});
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState<string>('');
   const [newDocumentTitle, setNewDocumentTitle] = useState<string>('');
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [localFolders, setLocalFolders] = useState<Folder[]>([]);
-  const [localDocuments, setLocalDocuments] = useState<{ [key: string]: Document }>({});
+  //const [localDocuments, setLocalDocuments] = useState<{ [key: string]: Document }>({});
 
-  const router = useRouter()
+  //const router = useRouter();
 
-  useEffect(() => {
-    if (folders) {
-      setLocalFolders(folders);
-      //const localDocs: { [key: string]: Document } = {};
-      //folders.forEach(folder => {
-      //  folder.documents.forEach(doc => {
-      //    localDocs[doc.id] = doc;
-      //  });
-      //});
-      //setLocalDocuments(localDocs);
-    }
-  }, [folders, localFolders]);
-
-  if (error) {
-    return (
-      <div className='rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200'>
-        <h1 className='flex text-2xl font-bold mb-4 text-light-heading dark:text-light-background gap-2'>
-          No Data
-          <CircleSlashedIcon size={30} className="text-light-heading dark:text-light-background" />
-        </h1>
-        <p className='text-light-text dark:text-dark-text'>No Connection</p>
-      </div>
-    );
-  }
-
-  if (!folders) return <LoadingSpinner />
+  if (!folders) return <LoadingSpinner />;
 
   const toggleFolder = (id: string) => {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-  }
+  };
 
   const handleMouseEnter = (id: string) => {
     setIsHover(prev => ({ ...prev, [id]: true }));
-  }
+  };
 
   const handleMouseLeave = (id: string) => {
     setIsHover(prev => ({ ...prev, [id]: false }));
-  }
+  };
 
   const getNextFolderName = (baseName: string) => {
     let maxNumber = 0;
-    localFolders.forEach(folder => {
+    folders.forEach((folder: FolderType) => {
       const match = folder.name.match(new RegExp(`${baseName}(\\d+)`));
       if (match) {
         const number = parseInt(match[1], 10);
@@ -107,7 +57,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
   const getNextDocumentTitle = (baseTitle: string, folderId: string) => {
     let maxNumber = 0;
-    const folder = localFolders.find(folder => folder.id === folderId);
+    const folder = folders.find(folder => folder.id === folderId);
     folder?.documents.forEach(document => {
       const match = document.title.match(new RegExp(`${baseTitle}(\\d+)`));
       if (match) {
@@ -136,10 +86,10 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
     if (response.ok) {
       const newFolder = await response.json();
-      setLocalFolders(prev => [...prev, newFolder]);
-      mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+      setFolders(prev => [...prev, newFolder]);
+      refreshFolders();
     }
-  }
+  };
 
   const createDocument = async (folderId: string) => {
     const newDocumentTitle = await getNextDocumentTitle("Document", folderId);
@@ -158,7 +108,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
     if (response.ok) {
       const newDocument = await response.json();
-      await setLocalFolders(prev => {
+      setFolders(prev => {
         const updatedFolders = prev.map(folder => {
           if (folder.id === folderId) {
             return { ...folder, documents: [...folder.documents, newDocument] };
@@ -167,13 +117,13 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
         return updatedFolders;
       });
-      setLocalDocuments(prev => ({ ...prev, [newDocument.id]: newDocument }));
-      setNewDocumentTitle(newDocumentTitle); // Update the state with the new document title
-      mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+      //setLocalDocuments(prev => ({ ...prev, [newDocument.id]: newDocument }));
+      setNewDocumentTitle(newDocumentTitle);
+      refreshFolders();
     }
-  }
+  };
 
-  const deleteDocument = async (document: Document) => {
+  const deleteDocument = async (document: DocumentType) => {
     if (window.confirm(`Are you sure you want to delete ${document.title}?`)) {
       try {
         const response = await fetch(`/api/documents/${document.id}`, {
@@ -181,7 +131,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
 
         if (response.ok) {
-          setLocalFolders(prev => {
+          setFolders(prev => {
             const updatedFolders = prev.map(folder => {
               if (folder.id === document.folderId) {
                 return { ...folder, documents: folder.documents.filter(doc => doc.id !== document.id) };
@@ -190,7 +140,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
             });
             return updatedFolders;
           });
-          mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+          refreshFolders();
         } else {
           const data = await response.json();
           console.error('Failed to delete document:', data.error);
@@ -201,7 +151,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
     }
   };
 
-  const deleteFolder = async (folder: Folder) => {
+  const deleteFolder = async (folder: FolderType) => {
     if (window.confirm(`Are you sure you want to delete ${folder.name} and all its contents?`)) {
       try {
         const response = await fetch(`/api/folders/${folder.id}`, {
@@ -209,8 +159,8 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
         });
 
         if (response.ok) {
-          setLocalFolders(prev => prev.filter(f => f.id !== folder.id));
-          mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+          setFolders(prev => prev.filter(f => f.id !== folder.id));
+          refreshFolders();
         } else {
           const data = await response.json();
           console.error('Failed to delete folder:', data.error);
@@ -221,18 +171,18 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
     }
   };
 
-  const handleFolderDoubleClick = (folder: Folder) => {
+  const handleFolderDoubleClick = (folder: FolderType) => {
     setEditingFolderId(folder.id);
     setNewFolderName(folder.name);
   };
 
-  const handleDocumentDoubleClick = (document: Document) => {
+  const handleDocumentDoubleClick = (document: DocumentType) => {
     setEditingDocumentId(document.id);
     setNewDocumentTitle(document.title);
   };
 
   const handleFolderNameChange = async (folderId: string) => {
-    setLocalFolders(prev => prev.map(folder => folder.id === folderId ? { ...folder, name: newFolderName } : folder));
+    setFolders(prev => prev.map(folder => folder.id === folderId ? { ...folder, name: newFolderName } : folder));
     await fetch(`/api/folders/${folderId}`, {
       method: "PUT",
       headers: {
@@ -243,12 +193,12 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
       }),
     });
     setEditingFolderId(null);
-    mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+    refreshFolders();
   };
 
   const handleDocumentTitleChange = async (documentId: string) => {
-    setLocalDocuments(prev => ({ ...prev, [documentId]: { ...prev[documentId], title: newDocumentTitle } }));
-    setLocalFolders(prev => {
+    //setLocalDocuments(prev => ({ ...prev, [documentId]: { ...prev[documentId], title: newDocumentTitle } }));
+    setFolders(prev => {
       const updatedFolders = prev.map(folder => {
         if (folder.documents.some(doc => doc.id === documentId)) {
           return {
@@ -270,15 +220,15 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
       }),
     });
     setEditingDocumentId(null);
-    mutate(`/api/folders?userId=${userId}&projectId=${projectId}`);
+    refreshFolders();
   };
 
-  const handleDocumentClick = (document: Document) => {
+  const handleDocumentClick = (document: DocumentType) => {
     setSelectedDocumentId(document.id);
     onDocumentSelect(document);
   };
 
-  const renderFolder = (folder: Folder) => {
+  const renderFolder = (folder: FolderType) => {
     return (
       <li key={folder.id} className="ml-4">
         <div
@@ -381,7 +331,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
           <Plus size={24} className="ml-2 cursor-pointer" onClick={createFolder} />
         </h2>
       </div>
-      <ul className="space-y-2">{Array.isArray(localFolders) && localFolders.map(renderFolder)}</ul>
+      <ul className="space-y-2">{Array.isArray(folders) && folders.map(renderFolder)}</ul>
     </div>
   )
 }

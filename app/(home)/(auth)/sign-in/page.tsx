@@ -10,6 +10,9 @@ import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useTheme } from 'next-themes';
 import { Link } from '@mui/material';
+import { useSession } from 'next-auth/react';
+import { useUser } from '@/contexts/UserContext';
+import axios from 'axios';
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -18,11 +21,22 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter();
+  const { updateUser } = useUser();
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);  // Set loading state to true when the form is submitted
+    setLoading(true);
+
+    const response = await fetch('/api/auth/sign-in', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password }),
+      //redirect: false,
+    });
 
     const result = await signIn('credentials', {
       email,
@@ -30,21 +44,25 @@ export default function LoginPage() {
       redirect: false,
     });
 
-    if (result?.url && result.error ) {
-      console.error('Sign-in error:', result);
-      setError(`${result.error}: Incorrect Email or Password.`)
-    } else if (result?.error && !result.url) {
-      localStorage.setItem('error', result.error.split(']')[1]);
-      console.error('Sign-in error:', result);
-      setError(`${result.error}: Connection Error`);
+    if (response?.url && response.status === 401 || result?.url && result.status === 401) {
+      //console.error('Sign-in error:', response);
+      setError(`${response.statusText}: Incorrect Email or Password.`);
+    } else if (response.status === 404 || result?.status === 404) {
+      //console.error('Sign-in error:', response);
+      setError(`Connection Error`);
     } else {
-      console.log('Sign-in successful:', result);
-      router.push('/dashboard');
+      //if (session) {
+        const {user} = await response.json();
+        //console.log('User Session:', session);
+        //console.log('User:', user.profile);
+        updateUser({...user, ...user.profile, userName:user.profile.username});
+        //console.log('Sign-in successful:', user);
+        router.push('/dashboard');
+      //}
     }
     setEmail('');
     setPassword('');
-
-    setLoading(false);  // Set loading state to false after processing the result
+    setLoading(false);
   };
 
   const muiTheme = createTheme({

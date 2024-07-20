@@ -19,18 +19,31 @@ export async function PUT(req: NextRequest) {
     }
 
     const buffer = await file.arrayBuffer();
-    const filename = `${Date.now()}-${file.name}`;
+    const filename = `${Date.now().toString()}-${file.name}`; // Ensure filename is a string
     const filepath = path.join(uploadDir, filename);
-    await fs.promises.writeFile(filepath, Buffer.from(buffer));
-
-    // Example: Constructing file URL
-    const imageUrl = `/uploads/${filename}`;
 
     // Example: Update user's profile in database
     const userId = formData.get('userId') as string;
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
+
+    // Fetch the current profile to get the existing image URL
+    const currentProfile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (currentProfile?.imageUrl) {
+      const oldFilePath = path.join(uploadDir, path.basename(currentProfile.imageUrl));
+      if (fs.existsSync(oldFilePath)) {
+        await fs.promises.unlink(oldFilePath);
+      }
+    }
+
+    await fs.promises.writeFile(filepath, Buffer.from(buffer));
+
+    // Example: Constructing file URL
+    const imageUrl = `/uploads/${filename}`;
 
     const profile = await prisma.profile.update({
       where: { userId },
@@ -44,8 +57,5 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Remove the Edge runtime configuration
+// export const runtime = 'edge';

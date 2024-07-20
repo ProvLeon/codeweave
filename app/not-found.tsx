@@ -14,7 +14,7 @@ const NotFoundPage = () => {
         <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
           Oops! The page you are looking for does not exist. It might have been moved or deleted.
         </p>
-        <Button className='  py-3 text-lg font-semibold text-white rounded-lg shadow-md transition duration-300'>
+        <Button className='py-3 text-lg font-semibold text-white rounded-lg shadow-md transition duration-300'>
         <Link href="/" className=" flex  ">
           <Home  />
           Go Back Home

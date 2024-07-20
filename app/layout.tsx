@@ -1,11 +1,14 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
-import HeaderWrapper from '@/components/HeaderWrapper'
+//import HeaderWrapper from '@/components/HeaderWrapper'
 import { SessionProvider } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import getPathName from '@/lib/getPathname'
-//import { getSessionServer } from '@/lib/Session'
+import Header from '@/components/Header'
+//import Main from '@/app/(home)/_app'
+import { getSessionServer } from '@/lib/Session'
+import { UserProvider } from '@/contexts/UserContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,7 +25,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  //const {session, status} = getSession()
+  const session = await getSessionServer()
   //const pathname = getPathName()
 
   // Avoid redirecting if the user is on the sign-up or sign-in page
@@ -32,14 +35,17 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <UserProvider initialUser={session?.user}>
             <div className="flex flex-col min-h-screen dark:bg-dark-background bg-light">
-              <HeaderWrapper />
+              {/*<Main Component={Header} />*/}
+              <Header/>
               <main className="flex-grow">{children}</main>
               {/* <Footer /> */}
             </div>
+            </UserProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

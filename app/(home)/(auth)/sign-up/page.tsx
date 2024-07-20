@@ -4,12 +4,12 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import TextField from '@mui/material/TextField';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useTheme } from 'next-themes';
+//import { createTheme, ThemeProvider } from '@mui/material/styles';
+//import { useTheme } from 'next-themes';
 import { Link } from '@mui/material'
 
 const RegisterPage = () => {
-  const { theme, setTheme } = useTheme();
+  //const { theme, setTheme } = useTheme();
   const [userDetails, setUserDetails] = useState({
     email: '',
     password: '',
@@ -21,12 +21,12 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter()
 
-  useEffect(() => {
-    // Ensure the theme is set correctly on the client
-    if (theme === 'dark' || theme === 'light') {
-      setTheme(theme);
-    }
-  }, [theme, setTheme]);
+  //useEffect(() => {
+  //  // Ensure the theme is set correctly on the client
+  //  if (theme === 'dark' || theme === 'light') {
+  //    setTheme(theme);
+  //  }
+  //}, [theme, setTheme]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,11 +50,11 @@ const RegisterPage = () => {
     setLoading(false)
   }
 
-  const muiTheme = createTheme({
-    palette: {
-      mode: theme === 'dark' ? 'dark' : 'light',
-    },
-  });
+  //const muiTheme = createTheme({
+  //  palette: {
+  //    mode: theme === 'dark' ? 'dark' : 'light',
+  //  },
+  //});
 
   return (
     //<ThemeProvider theme={muiTheme}>

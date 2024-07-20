@@ -1,4 +1,3 @@
-// components/CodeEditor.tsx
 'use client';
 
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
@@ -18,14 +17,13 @@ import { languages } from '@codemirror/language-data';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { cpp } from '@codemirror/lang-cpp';
 import { rust } from '@codemirror/lang-rust';
-//import { }
 import { io, Socket } from 'socket.io-client';
 import { Card, CardContent, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import Terminal from './Terminal';
 import { EyeIcon, EyeOffIcon, Tv2Icon, ZapIcon, CloudIcon, CloudOff } from 'lucide-react';
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language';
-//import executeCode from '@/lib/Execute';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface EditorProps {
   initialValue: string;
@@ -34,7 +32,7 @@ interface EditorProps {
   className?: string;
   showTerminal?: boolean;
   setShowTerminal?: Dispatch<SetStateAction<boolean>>;
-  language: 'javascript' | 'python' | 'java'  | 'c++' | 'c' | 'rust';
+  language: 'javascript' | 'python' | 'java' | 'c++' | 'c' | 'rust';
   setLanguage: Dispatch<SetStateAction<'javascript' | 'python' | 'java' | 'c++' | 'c' | 'rust'>>;
 }
 
@@ -42,10 +40,6 @@ const languageExtensions = {
   javascript,
   python,
   java,
-  //html,
-  //json,
-  //sql,
-  //markdown,
   c: cpp,
   "c++": cpp,
   rust,
@@ -60,6 +54,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
   const [documentContent, setDocumentContent] = useState(document.content);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isSaved, setIsSaved] = useState(false);
+  const { refreshFolders } = useProject();
 
   useEffect(() => {
     if (collaborative) {
@@ -116,7 +111,6 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         ],
       });
 
-
       const view = new EditorView({
         state: startState,
         parent: editorRef.current,
@@ -130,19 +124,9 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
     }
   }, [document.content, collaborative, socket, language]);
 
-  //useEffect(() => {
-  //  const interval = setInterval(() => {
-  //    if (Date.now() - lastUpdate >= 2000) {
-  //      updateDocument({content: documentContent, document: document});
-  //    }
-  //  }, 2000);
-
-  //  return () => clearInterval(interval);
-  //}, [documentContent, lastUpdate]);
-
   const runCode = async (setShowTerminal: Dispatch<SetStateAction<boolean>>) => {
-    setShowTerminal(true)
-    setLoading(true)
+    setShowTerminal(true);
+    setLoading(true);
     if (editorView) {
       const result = await fetch('/api/execute', {
         method: 'POST',
@@ -153,20 +137,18 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
           code: editorView.state.doc.toString(),
           language,
         }),
-      })
+      });
       if (result.ok) {
         const resultJson = await result.json();
-      setExecutionResult(resultJson.output);
+        setExecutionResult(resultJson.output);
       }
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   const updateDocument = async ({ content, document }: { content: string, document: { id: string } }) => {
     try {
-      if (document.id === "1")
-        return
-      //setLoading(true)
+      if (document.id === "1") return;
       const response = await fetch(`/api/documents/${document.id}`, {
         method: 'PUT',
         headers: {
@@ -179,26 +161,28 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         throw new Error(`Failed to update document: ${errorText}`);
       }
       setIsSaved(true);
+      refreshFolders();
     } catch (error) {
       console.error('Error updating document:', error);
     }
   };
-
 
   return (
     <div className={`w-full h-full ${className}`}>
       <CardTitle className="text-light-heading dark:text-dark-heading px-3 py-2 pr-6 flex items-center justify-between">
         <div className="flex justify-center gap-2">
           <p className="text-2xl font-bold mb-4 text-light-heading dark:text-dark-heading">{document?.title}</p>
-          {isSaved ? <div className="items-center">
-            <CloudIcon className="ml-2 text-green-500" />
-            <p className="text-xs text-green-500 -mt-2">Saved</p>
+          {isSaved ? (
+            <div className="items-center">
+              <CloudIcon className="ml-2 text-green-500" />
+              <p className="text-xs text-green-500 -mt-2">Saved</p>
             </div>
-            : <div className="items-center">
-            <CloudOff className="ml-2 text-red-500" />
-            <p className="text-xs -mt-2 text-red-500">Unsaved</p>
+          ) : (
+            <div className="items-center">
+              <CloudOff className="ml-2 text-red-500" />
+              <p className="text-xs -mt-2 text-red-500">Unsaved</p>
             </div>
-            }
+          )}
         </div>
         <div className="flex items-center gap-5 flex-row">
           <select
@@ -219,10 +203,6 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
             <option value="java">Java</option>
-            {/*<option value="html">HTML</option>
-            <option value="json">JSON</option>
-            <option value="sql">SQL</option>
-            <option value="markdown">Markdown</option>*/}
             <option value="c">C</option>
             <option value="c++">C++</option>
             <option value="rust">Rust</option>

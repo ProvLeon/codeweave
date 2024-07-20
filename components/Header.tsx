@@ -8,16 +8,22 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import { Session } from 'next-auth' // Import the Session type from next-auth
 import ProfileClient from '@/components/ProfileClient'
+import withAuth from './withAuth'
+//import Main from '@/app/(home)/_app'
+import { useUser } from '@/contexts/UserContext'
+import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
   session: Session | null
 }
 
-export default function Header({ session }: HeaderProps) {
+const Header = ({ session }: HeaderProps) => {
   const pathname = usePathname()
   const [isSticky, setIsSticky] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
+  const { user, updateUser } = useUser()
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +53,12 @@ export default function Header({ session }: HeaderProps) {
     }
   }, [profileRef])
 
+  const handleSignOut = async () => {
+    updateUser({...user, signedOut: true})
+    await signOut()
+    router.push('/')
+  }
+
   return (
     <header className={`relative z-50 bg-light-background bg-opacity-70 dark:bg-opacity-70 dark:bg-dark-background border-b border-light-border dark:border-dark-border transition-all duration-30 ${isSticky && !isProfileOpen ? 'sticky top-2 backdrop-blur-md w-4/5 mx-auto rounded-xl px-2' : ''}`}>
       <div className="container mx-auto px-2 py-2 flex justify-between items-center">
@@ -58,6 +70,7 @@ export default function Header({ session }: HeaderProps) {
             alt="CodeWeave Logo"
             className="dark:hidden"
             priority={true}
+            style={{ width: 'auto', height: 'auto' }}
           />
           <Image
             src="/assets/CodeWeave_logo_Bright_dark_bg.png"
@@ -65,10 +78,11 @@ export default function Header({ session }: HeaderProps) {
             height={100}
             alt="CodeWeave Logo"
             className="hidden dark:block"
+            style={{ width: 'auto', height: 'auto' }}
           />
         </Link>
         <nav ref={profileRef} className="flex items-center space-x-4">
-          {session ? (
+          {user ? (
             <>
               {pathname === "/dashboard" ? (
                 ""
@@ -77,41 +91,42 @@ export default function Header({ session }: HeaderProps) {
                   <Button variant="ghost">Dashboard</Button>
                 </Link>
               )}
-              <Button onClick={() => signOut()}>Sign Out</Button>
+              <Button onClick={handleSignOut}>Sign Out</Button>
             </>
           ) : (
             <>
-              <Link href="/sign-in">
+              {pathname !== "/sign-in" && <Link href="/sign-in">
                 <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link href="/sign-up">
+              </Link>}
+              {pathname !== "/sign-up" && <Link href="/sign-up">
                 <Button>Sign Up</Button>
-              </Link>
+              </Link>}
             </>
           )}
           <ThemeToggle />
-          {session && pathname !== "/" && (
-            <div  className="">
+          {user && pathname !== "/" && (
+            <div className="">
               <div
                 className="cursor-pointer rounded-full flex items-center gap-2 overflow-hidden"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
                 <div className="flex rounded-full overflow-hidden h-[32px] w-[32px]">
                   <Image
-                    src={session.user.imageUrl || '/assets/icons8-user-96.png'}
+                    src={user?.imageUrl || '/assets/icons8-user-96.png'}
                     alt="Profile Image"
                     width={40}
                     height={40}
-                    className={`rounded-full ${!session.user.imageUrl ? 'dark:filter dark:invert dark:grayscale' : ''} object-cover`}
+                    className={`rounded-full ${!user?.imageUrl ? 'dark:filter dark:invert dark:grayscale' : ''} object-cover`}
+                    style={{ width: 'auto', height: 'auto' }}
                   />
                 </div>
-                <span>{session.user.userName || "user" }</span>
+                <span>{user?.userName || "user" }</span>
               </div>
             </div>
           )}
-          {isProfileOpen && session && (
-            <div className="absolute top-12 right-2 mt-2 h-[200px] w-auto bg-white dark:bg-dark-background border border-light-border dark:border-dark-border rounded-lg shadow-xl z-50">
-              <ProfileClient session={session} />
+          {isProfileOpen && user && (
+            <div className="absolute top-12 right-0 mt-2 h-auto w-auto backdrop-blur-lg bg-transparent border border-light-border dark:border-dark-border rounded-lg shadow-xl z-50 overflow-hidden duration-300 transition-transform">
+              <ProfileClient />
             </div>
           )}
         </nav>
@@ -119,3 +134,5 @@ export default function Header({ session }: HeaderProps) {
     </header>
   )
 }
+
+export default withAuth(Header)

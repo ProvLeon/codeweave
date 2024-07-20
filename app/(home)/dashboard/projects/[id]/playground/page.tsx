@@ -10,7 +10,7 @@ const PlaygroundContent = async () => {
   }
   return (
     <div>
-      <Playground session={session}/>
+      <Playground />
     </div>
   )
 }

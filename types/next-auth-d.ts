@@ -10,7 +10,7 @@ declare module "next-auth" {
       lastName: string
       imageUrl: string
       userName: string
-      DOB: string | Date
+      dob: string
     }
   }
 }

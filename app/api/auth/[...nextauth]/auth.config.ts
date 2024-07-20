@@ -3,11 +3,11 @@ import type { NextAuthConfig } from "next-auth";
 import { Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
-type CustomUser = User & {
-  firstName?: string;
-  lastName?: string;
-  dob?:  string | Date ;
-};
+//type CustomUser = User & {
+//  firstName?: string;
+//  lastName?: string;
+//  dob?:  string ;
+//};
 
 export const authConfig = {
   callbacks: {
@@ -19,6 +19,9 @@ export const authConfig = {
           const user = await prisma.user.findUnique({
             where: { id: token.id },
           });
+          if (user?.dob) {
+            console.log('User:', new Date(user.dob).toISOString().split('T')[0].split('-').join('/'));
+          }
           // get profile
           const profile = await prisma.profile.findUnique({
             where: { userId: token.id },
@@ -28,7 +31,7 @@ export const authConfig = {
           session.user.name = token.name;
           session.user.firstName = user?.firstName || '';
           session.user.lastName = user?.lastName || '';
-          session.user.DOB = user?.dob || '';
+          session.user.dob = user?.dob ? user.dob.toISOString() : '';
           session.user.email = token.email;
           session.user.imageUrl = profile?.imageUrl || '';
           session.user.userName = profile?.username || '';

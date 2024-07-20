@@ -4,7 +4,8 @@ import CodeEditor from "@/components/CodeEditor";
 import FolderTree from "@/components/FolderTree";
 import { Card } from "./ui/card";
 import { useParams } from "next/navigation";
-
+import withAuth from "./withAuth";
+import { ProjectProvider } from '@/contexts/ProjectContext';
 
 const Playground = ({session}: {session: any}) => {
   const projectId = useParams().id;
@@ -108,42 +109,40 @@ void main(void) {
 };
 
   return (
-    <div>
-      <div className="grid grid-rows-[1fr_auto] bg-light-background h-[90vh] dark:bg-dark-background rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-green-50 dark:from-slate-600 dark:to-slate-700">
-        <div className="grid grid-cols-5 flex-1 overflow-hidden">
-          <div className="col-span-1 row-span-1 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
-            <FolderTree userId={session?.user.id} onDocumentSelect={setSelectedDocument} projectId={projectId} />
-          </div>
-          <div className="col-span-4 overflow-hidden">
-            {selectedDocument ? (
-              <CodeEditor
-                document={selectedDocument}
-                initialValue={selectedDocument.content}
-                showTerminal={showTerminal}
-                setShowTerminal={setShowTerminal}
-                language={language}
-                setLanguage={setLanguage}
-                collaborative={session?.user.collaborative}
-              />
-            ) : (
-              //{
-                //languages.[language] &&
-                (<CodeEditor
-                document={languages[language]}
-                initialValue={languages.javascript.content}
-                showTerminal={showTerminal}
-                setShowTerminal={setShowTerminal}
-                language={language}
-                setLanguage={setLanguage}
-                />)
-              //}
-            )}
+    <ProjectProvider userId={session?.user.id} projectId={projectId}>
+      <div>
+        <div className="grid grid-rows-[1fr_auto] bg-light-background h-[90vh] dark:bg-dark-background rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-green-50 dark:from-slate-600 dark:to-slate-700">
+          <div className="grid grid-cols-5 flex-1 overflow-hidden">
+            <div className="col-span-1 row-span-1 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
+              <FolderTree userId={session?.user.id} onDocumentSelect={setSelectedDocument} projectId={projectId} />
+            </div>
+            <div className="col-span-4 overflow-hidden">
+              {selectedDocument ? (
+                <CodeEditor
+                  document={selectedDocument}
+                  initialValue={selectedDocument.content}
+                  showTerminal={showTerminal}
+                  setShowTerminal={setShowTerminal}
+                  language={language}
+                  setLanguage={setLanguage}
+                  collaborative={session?.user.collaborative}
+                />
+              ) : (
+                <CodeEditor
+                  document={languages[language]}
+                  initialValue={languages.javascript.content}
+                  showTerminal={showTerminal}
+                  setShowTerminal={setShowTerminal}
+                  language={language}
+                  setLanguage={setLanguage}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-    </div>
+    </ProjectProvider>
   )
 }
 
-export default Playground
+export default withAuth(Playground)
