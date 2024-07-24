@@ -131,7 +131,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         view.destroy();
       };
     }
-  }, [document.content, collaborative, socket, language, collaborators]);
+  }, [document, collaborative, socket, language, collaborators]);
 
   const runCode = async (setShowTerminal: Dispatch<SetStateAction<boolean>>) => {
     setShowTerminal(true);

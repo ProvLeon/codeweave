@@ -8,7 +8,7 @@ import LoadingSpinner from './LoadingSpinner';
 import {useUser} from '@/contexts/UserContext'
 
 const withAuth = (WrappedComponent: ComponentType<any>) => {
-  return (props: any) => {
+  const AuthenticatedComponent = (props: any) => {
     const { data: session, status } = useSession();
     const router = useRouter();
     const {user} = useUser()
@@ -28,6 +28,10 @@ const withAuth = (WrappedComponent: ComponentType<any>) => {
 
     return <WrappedComponent {...props} session={session} />;
   };
+
+  AuthenticatedComponent.displayName = `withAuth(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+
+  return AuthenticatedComponent;
 };
 
 export default withAuth;

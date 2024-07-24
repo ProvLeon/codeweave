@@ -38,7 +38,7 @@ function saveDocument(content) {
     }, 50); // Adjust the typing speed by changing the interval (milliseconds)
 
     return () => clearInterval(intervalId);
-  }, []); // Removed mouseX from dependency array
+  }, [fullCodeString]); // Added `fullCodeString` to the dependency array
 
   return (
     <div className="mx-auto gap-2 px-4 py-16 text-center bg-gradient-to-br from-blue-50 to-green-50 dark:from-slate-600 dark:to-slate-700 shadow-lg overflow-hidden h-[70vh] flex">

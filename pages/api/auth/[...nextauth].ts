@@ -53,6 +53,6 @@ export const authOptions = {
 
 };
 
-export const {auth, signIn, signOut, handlers: { GET, POST}} = NextAuth(authOptions);
+export default NextAuth(authOptions);
 
 //export { handler as GET, handler as POST };

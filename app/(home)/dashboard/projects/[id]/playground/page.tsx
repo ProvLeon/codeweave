@@ -4,10 +4,10 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 
 const PlaygroundContent = async () => {
-  const session = await getSessionServer()
-  if (!session) {
-    return redirect('/sign-up')
-  }
+  //const session = await getSessionServer()
+  //if (!session) {
+  //  return redirect('/sign-up')
+  //}
   return (
     <div>
       <Playground />

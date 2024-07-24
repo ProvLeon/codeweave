@@ -135,7 +135,7 @@ export default function LoginPage() {
               <Button type="submit" variant="default" className="w-full" loading={loading}>
                 {loading ? 'Signing In...' : 'Sign In'}
               </Button>
-              <p className='text-light-text dark:text-dark-text'>Don't have an account? <Link href="/sign-up">Sign Up</Link></p>
+              <p className='text-light-text dark:text-dark-text'>Don&apos;t have an account? <Link href="/sign-up">Sign Up</Link></p>
             </CardFooter>
           </form>
         </Card>

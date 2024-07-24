@@ -29,7 +29,7 @@ const ProfileClient = () => {
       setIsDobEditable(false);
     }
     console.log(dob)
-  }, [user]);
+  }, [user, dob]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

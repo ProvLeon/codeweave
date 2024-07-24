@@ -28,7 +28,7 @@ export default function DocumentList({ userId }: { userId: string }) {
   }
   useEffect(() => {
     fetchDocuments()
-  }, [userId])
+  }, [userId, fetchDocuments])
 
   const createDocument = async () => {
     await fetch("/api/documents", {

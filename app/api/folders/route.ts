@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { auth } from "../auth/[...nextauth]/route";
+import { getSessionServer } from "@/lib/sessions/serverSession";
 
 
 const GET = async (request: Request) => {
-  const  session = await auth()
+  const  session = await getSessionServer()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -25,7 +25,7 @@ const GET = async (request: Request) => {
 }
 
 const POST = async (request: Request) => {
-  const  session = await auth()
+  const  session = await getSessionServer()
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

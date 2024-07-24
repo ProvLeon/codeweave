@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
-import { auth } from "../../auth/[...nextauth]/route";
+import { getSessionServer } from "@/lib/sessions/serverSession";
 
 const GET = async (request: Request, {params}: { params:{id:string}}) => {
   //const token = request.headers.get("Authorization")?.split(" ")[1]
   //const decoded = await verifyToken(token || "");
-  const session = await auth();
+  const session = await getSessionServer();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -38,7 +38,7 @@ const PUT = async (request: Request, {params}: { params:{id:string}}) => {
   //const token = request.headers.get("Authorization")?.split(" ")[1]
   //const decoded =await verifyToken(token || "");
 
-  const session = await auth();
+  const session = await getSessionServer();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -76,7 +76,7 @@ const PUT = async (request: Request, {params}: { params:{id:string}}) => {
 }
 
 const DELETE = async (request: Request, { params }: { params: { id: string } }) => {
-  const session = await auth();
+  const session = await getSessionServer();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,9 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const { documentId, userId } = req.body;
+export async function POST(req: NextRequest) {
+    const { documentId, userId } = await req.json();
 
     try {
       const collaborator = await prisma.documentCollaborator.create({
@@ -13,12 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      res.status(200).json(collaborator);
+      return NextResponse.json(collaborator, { status: 200 });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to invite collaborator' });
+      return NextResponse.json({ error: 'Failed to invite collaborator' }, { status: 500 });
     }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
 }
