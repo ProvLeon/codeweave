@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Plus, Folder, FileText, Edit3, FoldersIcon } from "lucide-react";
-import LoadingSpinner from "@/components/LoadingSpinner";
+//import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";

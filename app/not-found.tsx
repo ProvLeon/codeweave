@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+//import Image from 'next/image';
 import { Home, ErrorOutline } from '@mui/icons-material';
 import { Button } from '@/components/ui/button';
 //import { Button } from '@mui/material';

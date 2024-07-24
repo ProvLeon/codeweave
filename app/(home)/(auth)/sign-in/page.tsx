@@ -10,9 +10,9 @@ import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useTheme } from 'next-themes';
 import { Link } from '@mui/material';
-import { useSession } from 'next-auth/react';
+//import { useSession } from 'next-auth/react';
 import { useUser } from '@/contexts/UserContext';
-import axios from 'axios';
+//import axios from 'axios';
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter();
   const { updateUser } = useUser();
-  const { data: session } = useSession();
+  //const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
