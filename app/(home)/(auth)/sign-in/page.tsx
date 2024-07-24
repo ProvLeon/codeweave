@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useTheme } from 'next-themes';
-import { Link } from '@mui/material';
+import Link from 'next/link';
 //import { useSession } from 'next-auth/react';
 import { useUser } from '@/contexts/UserContext';
 //import axios from 'axios';

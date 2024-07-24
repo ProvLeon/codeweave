@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import TextField from '@mui/material/TextField';
 //import { createTheme, ThemeProvider } from '@mui/material/styles';
 //import { useTheme } from 'next-themes';
-import { Link } from '@mui/material'
+import Link from 'next/link'
 
 const RegisterPage = () => {
   //const { theme, setTheme } = useTheme();
