@@ -26,7 +26,7 @@ const getUser = async (userDetails: {email: string, password: string}): Promise<
   return { id: user.id, email: user.email, name: `${user.firstName} ${user.lastName}`, firstName: user.firstName, lastName: user.lastName, DOB: user.dob };
 }
 
-export const authOptions = {
+const authOptions = {
   ...authConfig,
   providers: [
     Credentials({
@@ -52,7 +52,7 @@ export const authOptions = {
 
 };
 
-export const {handlers: {GET, POST}, auth, signIn, signOut} = NextAuth(authOptions);
+export const {handlers: {GET, POST}} = NextAuth(authOptions);
 
 
 
