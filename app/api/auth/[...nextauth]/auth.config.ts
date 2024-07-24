@@ -3,12 +3,6 @@ import type { NextAuthConfig } from "next-auth";
 import { Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
-//type CustomUser = User & {
-//  firstName?: string;
-//  lastName?: string;
-//  dob?:  string ;
-//};
-
 export const authConfig = {
   callbacks: {
     async session({ session, token }: {session: Session, token: JWT}) {

@@ -8,7 +8,11 @@ import withAuth from "./withAuth";
 import { ProjectProvider } from '@/contexts/ProjectContext';
 
 const Playground = ({session}: {session: any}) => {
-  const projectId = useParams().id;
+  const params = useParams<{ id: string }>();
+  const projectId = params?.id;
+  if (!projectId) {
+    return <div>Project ID not found</div>;
+  }
   const [selectedDocument, setSelectedDocument] = useState<{ id: string, content: string, title: string } | null>(null);
   const [showTerminal, setShowTerminal] = useState(false);
   const [language, setLanguage] = useState<'javascript' | 'python' | 'java' | 'c++' | 'c' | 'rust'>('javascript');

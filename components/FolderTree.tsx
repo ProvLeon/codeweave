@@ -17,12 +17,12 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
   const { folders, setFolders, refreshFolders } = useProject();
   const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
   const [isHover, setIsHover] = useState<{ [key: string]: boolean }>({});
-  const [editIcons, setEditIcons] = useState<{ [key: string]: boolean }>({});
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState<string>('');
   const [newDocumentTitle, setNewDocumentTitle] = useState<string>('');
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState<string>('');
   //const [localDocuments, setLocalDocuments] = useState<{ [key: string]: Document }>({});
 
   //const router = useRouter();
@@ -108,10 +108,11 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
 
     if (response.ok) {
       const newDocument = await response.json();
+      //console.log("newDocument", newDocument);
       setFolders(prev => {
         const updatedFolders = prev.map(folder => {
           if (folder.id === folderId) {
-            return { ...folder, documents: [...folder.documents, newDocument] };
+            return { ...folder, documents: [...folder.documents, newDocument.document] };
           }
           return folder;
         });
@@ -193,6 +194,7 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
       }),
     });
     setEditingFolderId(null);
+    setFolders(prev => prev.map(folder => folder.id === folderId ? { ...folder, name: newFolderName } : folder));
     refreshFolders();
   };
 
@@ -223,6 +225,21 @@ const FolderTree = ({ userId, onDocumentSelect, className, projectId }: FolderTr
     refreshFolders();
   };
 
+  const inviteCollaborator = async (documentId: string) => {
+    const response = await fetch(`/api/documents/invite`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ documentId, inviteEmail }),
+    });
+
+    if (response.ok) {
+      alert('User invited successfully');
+    } else {
+      alert('Failed to invite user');
+    }
+  };
   const handleDocumentClick = (document: DocumentType) => {
     setSelectedDocumentId(document.id);
     onDocumentSelect(document);

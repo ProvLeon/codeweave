@@ -73,6 +73,7 @@ const POST = async (request: Request) => {
       },
       include: {
         folder: true,
+        revisions: true,
       },
     });
 

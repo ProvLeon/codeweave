@@ -55,6 +55,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isSaved, setIsSaved] = useState(false);
   const { refreshFolders } = useProject();
+  const [collaborators, setCollaborators] = useState<string[]>([]);
 
   useEffect(() => {
     if (collaborative) {
@@ -74,6 +75,14 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
             changes: { from: 0, to: editorView.state.doc.length, insert: content },
           });
         }
+      });
+
+      newSocket.on('user-joined', (userId: string) => {
+        setCollaborators(prev => [...prev, userId]);
+      });
+
+      newSocket.on('user-left', (userId: string) => {
+        setCollaborators(prev => prev.filter(id => id !== userId));
       });
 
       return () => {
@@ -122,7 +131,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
         view.destroy();
       };
     }
-  }, [document.content, collaborative, socket, language]);
+  }, [document.content, collaborative, socket, language, collaborators]);
 
   const runCode = async (setShowTerminal: Dispatch<SetStateAction<boolean>>) => {
     setShowTerminal(true);
@@ -140,6 +149,7 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
       });
       if (result.ok) {
         const resultJson = await result.json();
+        console.log(resultJson);
         setExecutionResult(resultJson.output);
       }
     }
@@ -164,6 +174,26 @@ const CodeEditor = ({ initialValue, document, collaborative = false, className, 
       refreshFolders();
     } catch (error) {
       console.error('Error updating document:', error);
+    }
+  };
+
+  const generateShareLink = async () => {
+    try {
+      const response = await fetch('/api/documents/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ documentId: document.id }),
+      });
+      if (response.ok) {
+        const { shareLink } = await response.json();
+        console.log('Share link:', shareLink);
+      } else {
+        console.error('Failed to generate share link');
+      }
+    } catch (error) {
+      console.error('Error generating share link:', error);
     }
   };
 
