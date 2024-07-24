@@ -1,6 +1,6 @@
 "use client"
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { ComponentType } from 'react';
 import Header from './Header';
@@ -8,13 +8,14 @@ import LoadingSpinner from './LoadingSpinner';
 import {useUser} from '@/contexts/UserContext'
 
 const withAuth = (WrappedComponent: ComponentType<any>) => {
+  const pathname = usePathname()
   const AuthenticatedComponent = (props: any) => {
     const { data: session, status } = useSession();
     const router = useRouter();
     const {user} = useUser()
 
     useEffect(() => {
-      if (status === 'unauthenticated') {
+      if (status === 'unauthenticated' && pathname !== '/') {
         router.push('/sign-in');
       }
     }, [status, router, user]);
