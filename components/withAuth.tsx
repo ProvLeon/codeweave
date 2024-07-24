@@ -8,11 +8,11 @@ import LoadingSpinner from './LoadingSpinner';
 import {useUser} from '@/contexts/UserContext'
 
 const withAuth = (WrappedComponent: ComponentType<any>) => {
-  const pathname = usePathname()
   const AuthenticatedComponent = (props: any) => {
     const { data: session, status } = useSession();
     const router = useRouter();
     const {user} = useUser()
+    const pathname = usePathname()
 
     useEffect(() => {
       if (status === 'unauthenticated' && pathname !== '/') {
