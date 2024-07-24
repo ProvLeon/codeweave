@@ -176,7 +176,7 @@ const RegisterPage = () => {
               <Button type="submit" variant="default" className="w-full" loading={loading}>
                 {loading ? 'Signing Up...' : 'Sign Up'}
               </Button>
-              <p className='text-light-text dark:text-dark-text'>Already have an account? <Link href="/sign-in">Sign In</Link></p>
+              <p className='text-light-text dark:text-dark-text'>Already have an account? <Link href="/sign-in" className='hover:underline text-blue-600 dark:hover:text-gray-400'>Sign In</Link></p>
             </CardFooter>
           </form>
         </Card>
