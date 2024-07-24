@@ -3,7 +3,6 @@ import Credentials from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import { compare } from "bcryptjs";
 import { authConfig } from "./auth.config";
-//import { JWT } from "next-auth/jwt";
 
 const getUser = async (userDetails: {email: string, password: string}): Promise<any> => {
   if (!userDetails?.email || !userDetails?.password) {
@@ -53,6 +52,9 @@ export const authOptions = {
 
 };
 
-export default NextAuth(authOptions);
+export const {handlers: {GET, POST}, auth, signIn, signOut} = NextAuth(authOptions);
 
-//export { handler as GET, handler as POST };
+
+
+//export default handler;
+//export default NextAuth(authOptions);

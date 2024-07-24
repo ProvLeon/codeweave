@@ -54,9 +54,13 @@ const Header = ({ session }: HeaderProps) => {
   }, [profileRef])
 
   const handleSignOut = async () => {
-    updateUser({...user, signedOut: true})
-    await signOut()
-    router.push('/')
+    try {
+      updateUser({...user, signedOut: true})
+      await signOut({redirect: true, callbackUrl: '/'})
+    } catch (error) {
+      console.error('Error signing out:', error)
+      // Optionally, you can add user feedback here, like a toast notification
+    }
   }
 
   return (
