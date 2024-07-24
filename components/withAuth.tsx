@@ -17,6 +17,8 @@ const withAuth = (WrappedComponent: ComponentType<any>) => {
     useEffect(() => {
       if (status === 'unauthenticated' && pathname !== '/') {
         router.push('/sign-in');
+      } else if (status === 'unauthenticated' && pathname === '/') {
+        router.push('/');
       }
     }, [status, router, user]);
 
