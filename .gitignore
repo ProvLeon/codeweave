@@ -28,6 +28,13 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.dockerignore
+Dockerfile
+fly.toml
+.github
+transcript.txt
+CodeWeavePresentation.md
+CodeWeave_Overview.docx
 
 # vercel
 .vercel

@@ -61,4 +61,5 @@ export const authConfig = {
   debug: true,
   secret: process.env.NEXTAUTH_SECRET,
   providers: [],
+  trustHost: true, // Add this line to trust the host
 } satisfies NextAuthConfig
