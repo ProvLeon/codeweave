@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
     await fs.promises.writeFile(filepath, Buffer.from(buffer));
 
     // Constructing file URL
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Ensure BASE_URL is set in your environment variables
+    //const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Ensure BASE_URL is set in your environment variables
     const imageUrl = `/uploads/${filename}`;
 
     const profile = await prisma.profile.update({
