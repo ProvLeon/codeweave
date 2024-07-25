@@ -42,8 +42,9 @@ export async function PUT(req: NextRequest) {
 
     await fs.promises.writeFile(filepath, Buffer.from(buffer));
 
-    // Example: Constructing file URL
-    const imageUrl = `/uploads/${filename}`;
+    // Constructing file URL
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Ensure BASE_URL is set in your environment variables
+    const imageUrl = `${baseUrl}/uploads/${filename}`;
 
     const profile = await prisma.profile.update({
       where: { userId },
