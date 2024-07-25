@@ -17,24 +17,27 @@ export async function POST(req: Request) {
 
   const hashedPassword = await hash(password, 12);
 
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email,
       firstName,
       lastName,
+      dob: new Date(),
       password: hashedPassword
     },
     include: {
-      profile: true
+      profile: true,
+      ownedDocuments: true,
     },
 
-  });
-
-  await prisma.profile.create({
-    data: {
+  }).then(async (user) => {
+    await prisma.profile.create({
+      data: {
       userId: user.id,
+      imageUrl: '',
       username: userName
-    }
+      }
+    });
   });
 
   return NextResponse.json({ message: "User registered successfully" }, { status: 200 });

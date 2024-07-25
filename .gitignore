@@ -35,6 +35,7 @@ fly.toml
 transcript.txt
 CodeWeavePresentation.md
 CodeWeave_Overview.docx
+public/uploads
 
 # vercel
 .vercel

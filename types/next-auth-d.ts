@@ -11,6 +11,7 @@ declare module "next-auth" {
       imageUrl: string
       userName: string
       dob: string
+      contact: string
     }
   }
 }

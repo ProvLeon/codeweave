@@ -55,7 +55,8 @@ export default function LoginPage() {
         const {user} = await response.json();
         //console.log('User Session:', session);
         //console.log('User:', user.profile);
-        updateUser({...user, ...user.profile, userName:user.profile.username});
+        console.log(user)
+        updateUser({...user, userName: user.profile.username});
         //console.log('Sign-in successful:', user);
         router.push('/dashboard');
       //}

@@ -22,7 +22,7 @@ const ProfileClient = () => {
   const [dob, setDob] = useState<string>(user.dob || '');
   const [isDobEditable, setIsDobEditable] = useState(true);
   const [imageLoading, setImageLoading] = useState(false);
-  const [contact, setContact] = useState(user.contactNumber || '');
+  const [contact, setContact] = useState(user.contact || '');
 
   useEffect(() => {
     if (user.dob === null) {
@@ -42,6 +42,7 @@ const ProfileClient = () => {
     setImageLoading(true)
 
     const formData = new FormData();
+    console.log(user)
     if (user) {
       formData.append('file', image);
       formData.append('userId', user.id);

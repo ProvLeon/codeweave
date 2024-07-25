@@ -26,6 +26,7 @@ export const authConfig = {
           session.user.firstName = user?.firstName || '';
           session.user.lastName = user?.lastName || '';
           session.user.dob = user?.dob ? user.dob.toISOString() : '';
+          session.user.contact = user?.contact || '';
           session.user.email = token.email;
           session.user.imageUrl = profile?.imageUrl || '';
           session.user.userName = profile?.username || '';

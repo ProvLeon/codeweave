@@ -38,7 +38,7 @@ const DashboardClient = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const { data: projects, error } = useSWR(
-    user && !user?.signedOut ? `/api/projects?userId=${user?.id}` : null, // Only fetch if user is defined
+    user && !user?.signedOut ? `/api/projects?userId=${user.id}` : null, // Only fetch if user is defined
     fetcher,
     {
       refreshInterval: 60000, // Revalidate every 60 seconds
@@ -46,6 +46,7 @@ const DashboardClient = () => {
   );
 
   const handleCreateProject = async () => {
+    console.log(user)
     try {
       const response = await fetch("/api/projects", {
         method: "POST",
