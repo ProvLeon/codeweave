@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 const uploadDir = path.join(process.cwd(), 'public/uploads');
-
+//const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 // Create uploads directory if it doesn't exist
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest) {
 
     // Constructing file URL
     //const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Ensure BASE_URL is set in your environment variables
-    const imageUrl = `/uploads/${filename}`;
+    const imageUrl = `/api/images/${filename}`;
 
     const profile = await prisma.profile.update({
       where: { userId },
