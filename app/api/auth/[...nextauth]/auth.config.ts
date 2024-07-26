@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
-import type { NextAuthConfig } from "next-auth";
+import type {NextAuthConfig}  from "next-auth";
 import { Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
-export const authConfig: NextAuthConfig = {
+export const authConfig = {
   callbacks: {
     async session({ session, token }: {session: Session, token: JWT}) {
       try {
@@ -26,7 +26,6 @@ export const authConfig: NextAuthConfig = {
           session.user.firstName = user?.firstName || '';
           session.user.lastName = user?.lastName || '';
           session.user.dob = user?.dob ? user.dob.toISOString() : '';
-          session.user.contact = user?.contact || '';
           session.user.email = token.email;
           session.user.imageUrl = profile?.imageUrl || '';
           session.user.userName = profile?.username || '';
@@ -49,8 +48,7 @@ export const authConfig: NextAuthConfig = {
       } catch (error) {
         console.error('Error in JWT callback:', error);
         return token;
-      }
-    },
+    }}
   },
   pages: {
     signIn: "/signin",
@@ -60,7 +58,8 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
-  debug: true,
+  //debug: true,
   secret: process.env.NEXTAUTH_SECRET,
   providers: [],
-};
+  trustHost: true,
+} satisfies NextAuthConfig

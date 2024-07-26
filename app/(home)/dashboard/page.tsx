@@ -99,7 +99,7 @@ const DashboardClient = () => {
   };
 
   // ... existing code ...
-  if (error || (projects === undefined)) {
+  if (error || (projects === undefined) || projects.length() === 0) {
     return (
       <div className="rounded-l-lg p-4 h-full flex flex-col justify-center items-center dark:bg-slate-800 bg-slate-200">
         {error ?
