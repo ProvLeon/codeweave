@@ -10,5 +10,7 @@ export interface CustomNextAuthOptions {
   };
   pages: {
     signIn: string;
+    signUp: string;
+    error: string
   };
 }
