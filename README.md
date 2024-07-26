@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CodeWeave
+
+CodeWeave is a real-time collaborative code editing platform that supports multiple programming languages. Our mission is to enhance coding productivity and interactivity for teams around the world.
+
+## Table of Contents
+
+- [CodeWeave](#codeweave)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+  - [Usage](#usage)
+  - [Contributing](#contributing)
+  - [Author](#author)
+  - [License](#license)
 
 ## Getting Started
 
-First, run the development server:
+To get started with CodeWeave, follow the instructions below to set up the development environment.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Prerequisites
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Node.js (version 14 or higher)
+- npm or yarn
+- A modern web browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. Clone the repository:
 
-## Learn More
+   ```bash
+   git clone https://github.com/ProvLeon/codeweave.git
+   cd codeweave
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install the dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. Run the development server:
 
-## Deploy on Vercel
+   ```bash
+   npx prisma generate
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to see the application in action.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Features
+
+- **Real-time Collaboration**: Work together with your team in real-time, making coding sessions more interactive and productive.
+- **Multi-language Support**: Write and execute code in various programming languages seamlessly within the same environment.
+- **Version Control**: Keep track of changes with integrated version control, ensuring you never lose your progress.
+- **Customizable Editor**: Enjoy a powerful code editor with syntax highlighting, auto-completion, and more.
+
+## Technologies Used
+
+- **Frontend**: Next.js, React, TypeScript
+- **Backend**: Node.js, Express
+- **Database**: MongoDB
+- **Real-time Communication**: Socket.io
+- **Styling**: Tailwind CSS, Material-UI
+
+## Usage
+
+To start using CodeWeave, simply create an account or log in. You can create new projects, invite collaborators, and start coding together in real-time. The editor supports various programming languages, and you can execute code directly within the platform.
+
+## Contributing
+
+We welcome contributions to CodeWeave! If you have suggestions for improvements or new features, please open an issue or submit a pull request.
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them.
+4. Push your branch and open a pull request.
+
+## Author
+
+Emmanuel Okantah Lomotey
+Github: [ProvLeon](https://github.com/ProvLeon)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
