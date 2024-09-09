@@ -56,7 +56,7 @@ export default function LoginPage() {
       //console.log('User Session:', session);
       //console.log('User:', user.profile);
       // console.log(user)
-      await fetchUser()
+      // fetchUser()
       updateUser({ ...user, userName: user.profile.username });
       //console.log('Sign-in successful:', user);
       router.push('/dashboard');

@@ -23,7 +23,6 @@ const Header = ({ session }: HeaderProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
   const { user, updateUser } = useUser()
-  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {

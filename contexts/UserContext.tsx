@@ -29,7 +29,7 @@ export const UserProvider: React.FC<{ children: ReactNode, initialUser: any }> =
   }
 
   const updateUser = (newUserData: any) => {
-    fetchUser()
+    // fetchUser()
     setUser((prevUser: any) => ({ ...prevUser, ...newUserData }));
   };
 

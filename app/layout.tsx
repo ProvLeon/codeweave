@@ -39,12 +39,12 @@ export default async function RootLayout({
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <UserProvider initialUser={session?.user}>
-            <div className="flex flex-col min-h-screen dark:bg-dark-background bg-light">
-              {/*<Main Component={Header} />*/}
-              <Header/>
-              <main className="flex-grow">{children}</main>
-              {/* <Footer /> */}
-            </div>
+              <div className="flex flex-col min-h-screen dark:bg-dark-background bg-light">
+                {/*<Main Component={Header} />*/}
+                <Header />
+                <main className="flex-grow">{children}</main>
+                {/* <Footer /> */}
+              </div>
             </UserProvider>
           </ThemeProvider>
         </SessionProvider>
