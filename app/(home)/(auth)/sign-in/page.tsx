@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);  // New state for loading
   const router = useRouter();
-  const { updateUser } = useUser();
+  const { updateUser, fetchUser } = useUser();
   //const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,13 +52,14 @@ export default function LoginPage() {
       setError(`Connection Error`);
     } else {
       //if (session) {
-        const {user} = await response.json();
-        //console.log('User Session:', session);
-        //console.log('User:', user.profile);
-        console.log(user)
-        updateUser({...user, userName: user.profile.username});
-        //console.log('Sign-in successful:', user);
-        router.push('/dashboard');
+      const { user } = await response.json();
+      //console.log('User Session:', session);
+      //console.log('User:', user.profile);
+      // console.log(user)
+      await fetchUser()
+      updateUser({ ...user, userName: user.profile.username });
+      //console.log('Sign-in successful:', user);
+      router.push('/dashboard');
       //}
     }
     setEmail('');
