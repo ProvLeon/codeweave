@@ -55,8 +55,8 @@ const Header = ({ session }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
-      updateUser({...user, signedOut: true})
-      await signOut({redirect: true, callbackUrl: '/'})
+      updateUser({ ...user, signedOut: true })
+      await signOut({ redirect: true, callbackUrl: '/' })
     } catch (error) {
       console.error('Error signing out:', error)
       // Optionally, you can add user feedback here, like a toast notification
@@ -116,7 +116,7 @@ const Header = ({ session }: HeaderProps) => {
               >
                 <div className="flex rounded-full overflow-hidden h-[32px] w-[32px]">
                   <Image
-                    src={user?.imageUrl || '/assets/icons8-user-96.png'}
+                    src={user.imageUrl || '/assets/icons8-user-96.png'}
                     alt="Profile Image"
                     width={40}
                     height={40}
@@ -124,7 +124,7 @@ const Header = ({ session }: HeaderProps) => {
                     style={{ width: 'auto', height: 'auto' }}
                   />
                 </div>
-                <span>{user?.userName || "user" }</span>
+                <span>{user?.userName || "user"}</span>
               </div>
             </div>
           )}
